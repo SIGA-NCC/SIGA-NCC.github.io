@@ -753,7 +753,6 @@
 </head>
 <body>
 
-<div id="faixa-demo" hidden>Modo demonstração · dados de exemplo só neste aparelho · login <b>rogerio</b> (admin) ou <b>juraci</b> (voluntário) · senha <b>demo</b> · <button type="button" id="demo-reiniciar">reiniciar dados de exemplo</button></div>
 
 <header>
   <div class="topo-inner">
@@ -1353,13 +1352,6 @@ let idsCesta = [];   // produtos da receita: viram atalhos (chips) no Receber
 let lotes = [];      // última lista do estoque (a busca filtra no aparelho)
 let toastTimer;      // antes do boot: o toast pode ser chamado já na 1ª carga
 
-if (modoDemo()) {
-  $('#faixa-demo').hidden = false;
-  $('#demo-reiniciar')?.addEventListener('click', () => {
-    try { localStorage.removeItem('siga:demo'); } catch (e) {}
-    location.reload();
-  });
-}
 
 // ---------- boot ----------
 usuario = await exigirLogin();
