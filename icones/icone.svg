@@ -1,8 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#1F4739"/>
-  <g transform="translate(256 262)">
-    <path d="M-104 58c48 46 160 46 208-14" fill="none" stroke="#F7F1E3" stroke-width="34" stroke-linecap="round"/>
-    <path d="M-92 -54c32-62 152-62 184 0" fill="none" stroke="#F7F1E3" stroke-width="34" stroke-linecap="round"/>
-    <circle cx="0" cy="6" r="34" fill="#E8A33D"/>
-  </g>
+  <!-- alça -->
+  <path d="M170 262c0-92 44-132 86-132s86 40 86 132" fill="none" stroke="#F7F1E3" stroke-width="22" stroke-linecap="round"/>
+  <!-- coração dourado saindo da cesta -->
+  <path d="M256 270c-46-30-58-58-44-80 12-18 38-16 44 6 6-22 32-24 44-6 14 22 2 50-44 80z" fill="#E8A33D"/>
+  <!-- corpo da cesta -->
+  <path d="M120 276h272l-30 140c-3 14-14 22-28 22H178c-14 0-25-8-28-22z" fill="#F7F1E3"/>
+  <rect x="104" y="262" width="304" height="34" rx="17" fill="#F7F1E3"/>
+  <!-- trama -->
+  <path d="M170 322v92M230 322v100M290 322v100M350 322v92M138 352h236M146 390h220" stroke="#1F4739" stroke-width="10" stroke-linecap="round" opacity=".55"/>
 </svg>
