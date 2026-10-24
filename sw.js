@@ -1,6 +1,6 @@
 // sw.js — PWA do SIGA-NCC. Telas e scripts: rede primeiro (sempre a versão nova), cache só sem sinal.
 // O vídeo fica fora (sem sinal, a abertura cai direto no login). Chamadas ao Apps Script nunca passam por aqui.
-const VERSAO = 'siga-ncc-v10';
+const VERSAO = 'siga-ncc-v11';
 const BASE = [
   './', './index.html', './login.html', './manifest.json',
   './auth.js', './acesso.js', './config.js', './demo.js', './ui.js', './fx.js', './versiculos.js',
