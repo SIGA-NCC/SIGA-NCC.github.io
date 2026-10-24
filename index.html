@@ -1825,5 +1825,6 @@ async function carregarTudo() {
   // PWA: instala o app e deixa abrir sem sinal (sw.js). Erro aqui nunca pode atrapalhar a tela.
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
+<script type="module" src="instalar.js"></script>
 </body>
 </html>
