@@ -3,7 +3,7 @@
 const VERSAO = 'siga-ncc-v11';
 const BASE = [
   './', './index.html', './login.html', './manifest.json',
-  './auth.js', './acesso.js', './config.js', './demo.js', './ui.js', './fx.js', './versiculos.js',
+  './auth.js', './acesso.js', './config.js', './ui.js', './fx.js', './versiculos.js',
   './cestas.js', './recebedores.js', './escala.js', './imagem-escala.js', './notificacoes.js', './levantamento.js', './alertas-adm.js', './movimentos.js', './admin.js', './estoque-mapa.js', './estoque-mapa.css',
   './painel-motor.js', './painel-dados.js', './painel-ncc.css', './impacto.js', './grafico-mini.js', './sigma-dialogo.js',
   './icones/icone-192.png', './icones/icone-512.png', './midia/welcome-poster.jpg', './midia/boas-vindas.webp', './midia/boas-vindas.jpg'
