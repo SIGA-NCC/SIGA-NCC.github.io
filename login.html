@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  // Atrás de um caminho (ex.: /siga-ncc) a barra final é obrigatória p/ os links relativos: corrige sozinho.
+  if (!/\/$|\.[a-z0-9]+$/i.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);
+</script>
+<title>SIGA-NCC · Entrar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231F4739'/%3E%3Cpath d='M9 20c3 3 11 3 14-1M10 13c2-4 10-4 12 0' fill='none' stroke='%23F7F1E3' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16.5' r='2.2' fill='%23E8A33D'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F4739">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --papel: #F7F1E3;
+    --papel-2: #EFE6D0;
+    --verde: #1F4739;
+    --verde-2: #2E6B52;
+    --terracota: #C45D3C;
+    --ambar: #E8A33D;
+    --tinta: #2A2A26;
+    --tinta-fraca: #6B675C;
+    --borda: #D9CDB0;
+    --radius: 18px;
+    --sombra: 0 18px 50px -18px rgba(31, 71, 57, .45);
+    font-size: 17px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Public Sans', sans-serif;
+    color: var(--tinta);
+    background: var(--papel);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* grão de papel */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 40;
+  }
+
+  /* ---------- tela do vídeo ---------- */
+  #tela-video {
+    position: fixed; inset: 0;
+    background: #12281F;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 30;
+    transition: opacity .9s ease, visibility .9s;
+  }
+  #tela-video.ocultando { opacity: 0; visibility: hidden; }
+  #tela-video video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: .85;
+  }
+  #tela-video::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(18,40,31,.25) 0%, rgba(18,40,31,.15) 55%, rgba(18,40,31,.75) 100%);
+  }
+  .video-topo {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 20px 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 2;
+  }
+  .marca-video {
+    font-family: 'Fraunces', serif;
+    color: var(--papel);
+    font-size: 1.05rem;
+    letter-spacing: .04em;
+    text-shadow: 0 2px 12px rgba(0,0,0,.5);
+  }
+  .marca-video em { color: var(--ambar); font-style: normal; }
+  #btn-pular {
+    font: 600 .85rem 'Public Sans', sans-serif;
+    color: var(--papel);
+    background: rgba(247,241,227,.14);
+    border: 1px solid rgba(247,241,227,.45);
+    border-radius: 999px;
+    padding: 9px 20px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background .2s;
+  }
+  #btn-pular:hover { background: rgba(247,241,227,.3); }
+  .video-frase {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 0 26px 42px;
+    z-index: 2;
+    color: var(--papel);
+  }
+  .video-frase p {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    line-height: 1.35;
+    font-style: italic;
+    max-width: 22ch;
+    text-shadow: 0 2px 18px rgba(0,0,0,.55);
+    animation: subir .9s .3s ease both;
+  }
+  .video-frase span {
+    display: block;
+    margin-top: 10px;
+    font: 500 .8rem 'Public Sans', sans-serif;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ambar);
+  }
+  @keyframes subir { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- tela do login ---------- */
+  #tela-login {
+    min-height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 34px 20px 26px;
+    background:
+      radial-gradient(1100px 480px at 85% -10%, rgba(232,163,61,.16), transparent 60%),
+      radial-gradient(900px 520px at -10% 110%, rgba(46,107,82,.14), transparent 60%),
+      var(--papel);
+  }
+  #tela-login[hidden] { display: none; }
+  .card {
+    width: min(420px, 100%);
+    background: #FFFDF7;
+    border: 1px solid var(--borda);
+    border-radius: var(--radius);
+    box-shadow: var(--sombra);
+    padding: 34px 30px 26px;
+    animation: card .7s .1s ease both;
+  }
+  @keyframes card { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .card h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 2.1rem;
+    color: var(--verde);
+    letter-spacing: -.01em;
+  }
+  .card h1 em { color: var(--terracota); font-style: normal; }
+  .card .sub {
+    margin-top: 6px;
+    color: var(--tinta-fraca);
+    font-size: .92rem;
+    letter-spacing: .02em;
+  }
+  .card .linha-flor {
+    margin: 20px 0 22px;
+    display: flex; align-items: center; gap: 10px;
+    color: var(--verde-2);
+  }
+  .card .linha-flor::before, .card .linha-flor::after {
+    content: ''; flex: 1; height: 1px; background: var(--borda);
+  }
+  label {
+    display: block;
+    font: 600 .78rem 'Public Sans', sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--verde);
+    margin-bottom: 6px;
+  }
+  input {
+    width: 100%;
+    font: 1rem 'Public Sans', sans-serif;
+    color: var(--tinta);
+    background: var(--papel);
+    border: 1.5px solid var(--borda);
+    border-radius: 12px;
+    padding: 13px 14px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--verde-2);
+    box-shadow: 0 0 0 3px rgba(46,107,82,.15);
+  }
+  .campo + .campo { margin-top: 16px; }
+  .btn {
+    width: 100%;
+    margin-top: 22px;
+    font: 600 1rem 'Public Sans', sans-serif;
+    color: var(--papel);
+    background: var(--verde);
+    border: none; border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .btn:hover { background: var(--verde-2); }
+  .btn:active { transform: scale(.99); }
+  .btn[disabled] { opacity: .6; cursor: wait; }
+  .btn-claro {
+    background: transparent;
+    color: var(--verde);
+    border: 1.5px solid var(--verde);
+  }
+  .btn-claro:hover { background: rgba(31,71,57,.07); }
+  .erro {
+    display: none;
+    margin-top: 14px;
+    padding: 11px 14px;
+    background: #FBE8E2;
+    border: 1px solid #EEC3B4;
+    border-radius: 8px;
+    color: #8A3A22;
+    font-size: .9rem;
+  }
+  .dica-demo { margin-top: 14px; font-size: .82rem; color: var(--verde); background: rgba(232,163,61,.18); border-radius: 8px; padding: 8px 12px; }
+  .dica-demo[hidden] { display: none; }
+  .erro.visivel { display: block; animation: card .3s ease both; }
+  .rodape-card {
+    margin-top: 20px;
+    text-align: center;
+    font-size: .9rem;
+    color: var(--tinta-fraca);
+  }
+  .rodape-card a {
+    color: var(--terracota);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1.5px dashed rgba(196,93,60,.5);
+  }
+  .rodape-card a:hover { border-bottom-style: solid; }
+
+  .versiculo {
+    margin-top: 26px;
+    text-align: center;
+    max-width: 380px;
+    min-height: 74px;
+    animation: card .8s .45s ease both;
+  }
+  .versiculo p {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: .98rem;
+    line-height: 1.5;
+    color: var(--verde);
+    transition: opacity .6s;
+  }
+  .versiculo span {
+    display: block;
+    margin-top: 7px;
+    font: 600 .72rem 'Public Sans', sans-serif;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--terracota);
+    transition: opacity .6s;
+  }
+  .versiculo.trocando p, .versiculo.trocando span { opacity: 0; }
+  .creditos {
+    margin-top: 30px;
+    text-align: center;
+    font-size: .74rem;
+    color: var(--tinta-fraca);
+    letter-spacing: .04em;
+  }
+
+  /* ---------- modais ---------- */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(18, 40, 31, .55);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 50;
+    backdrop-filter: blur(3px);
+  }
+  .modal[hidden] { display: none; }
+  @media (min-width: 560px) { .modal { align-items: center; } }
+  .modal-cartao {
+    width: min(440px, 100%);
+    max-height: 92dvh;
+    overflow: auto;
+    background: #FFFDF7;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 28px 26px 30px;
+    animation: subir .35s ease both;
+    box-shadow: var(--sombra);
+  }
+  @media (min-width: 560px) { .modal-cartao { border-radius: var(--radius); } }
+  .modal-cartao h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.45rem;
+    color: var(--verde);
+    margin-bottom: 4px;
+  }
+  .modal-cartao .sub { color: var(--tinta-fraca); font-size: .9rem; margin-bottom: 20px; }
+  .modal-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .fechar {
+    background: none; border: none;
+    font-size: 1.5rem; line-height: 1;
+    color: var(--tinta-fraca);
+    cursor: pointer;
+    padding: 4px;
+  }
+  .fechar:hover { color: var(--terracota); }
+  .sucesso {
+    text-align: center;
+    padding: 18px 6px 6px;
+  }
+  .sucesso .icone {
+    width: 64px; height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--verde);
+    color: var(--papel);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+  }
+  .sucesso p { color: var(--tinta-fraca); line-height: 1.5; font-size: .95rem; }
+  .sucesso strong { color: var(--tinta); }
+
+  /* ---------- toast ---------- */
+  #toast {
+    position: fixed;
+    left: 50%; bottom: 26px;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--verde);
+    color: var(--papel);
+    padding: 13px 22px;
+    border-radius: 12px;
+    font: 500 .92rem 'Public Sans', sans-serif;
+    box-shadow: var(--sombra);
+    transition: transform .35s ease;
+    z-index: 60;
+    max-width: min(420px, 92vw);
+    text-align: center;
+  }
+  #toast.visivel { transform: translateX(-50%) translateY(0); }
+
+  /* =========================================================
+     Etapa 2 — abertura e entrada
+     ========================================================= */
+  :root { --sai: cubic-bezier(.16, 1, .3, 1); }
+  ::selection { background: rgba(232,163,61,.35); color: var(--verde); }
+  button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+    outline: 2px solid var(--verde-2); outline-offset: 3px; border-radius: 8px;
+  }
+  #tela-video[hidden] { display: none; }
+  #tela-video { background: #0D1513; }
+  .fundo-video {
+    position: absolute; inset: -40px;
+    background: url('midia/welcome-poster.jpg') center / cover;
+    filter: blur(28px) brightness(.5) saturate(.8);
+  }
+  #tela-video video { opacity: 0; transition: opacity .8s ease, transform 1s var(--sai), filter 1s var(--sai); }
+  #tela-video video.pronto { opacity: .92; }
+  /* celular em pé: o logo do fim do vídeo não pode ser cortado */
+  @media (orientation: portrait) { #tela-video video { object-fit: contain; } }
+  #tela-video.ocultando video { transform: scale(1.06); filter: blur(6px); }
+  .video-botoes { display: flex; gap: 8px; align-items: center; }
+  #btn-som {
+    display: inline-flex; align-items: center; gap: 7px;
+    font: 600 .85rem 'Public Sans', sans-serif; color: var(--papel);
+    background: rgba(232,163,61,.28); border: 1px solid rgba(232,163,61,.75); border-radius: 999px;
+    padding: 9px 16px; cursor: pointer; backdrop-filter: blur(4px); transition: background .2s;
+  }
+  #btn-som:hover { background: rgba(232,163,61,.45); }
+  #btn-som .onda { display: none; }
+  #btn-som[aria-pressed="true"] .onda { display: inline; }
+  #btn-som[aria-pressed="true"] .mudo { display: none; }
+  #btn-som[aria-pressed="true"] { background: rgba(247,241,227,.14); border-color: rgba(247,241,227,.45); }
+  .video-progresso {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 3;
+    background: rgba(247,241,227,.12);
+  }
+  .video-progresso i {
+    display: block; height: 100%; background: var(--ambar);
+    transform-origin: left; transform: scaleX(0);
+  }
+
+  /* cartão entra em escada */
+  .card > * { animation: subir .6s var(--sai) both; }
+  .card > h1 { animation-delay: .15s; }
+  .card > .sub { animation-delay: .22s; }
+  .card > .linha-flor { animation-delay: .28s; }
+  .card > form { animation-delay: .34s; }
+  .card > .rodape-card { animation-delay: .42s; }
+  .card.balanca { animation: balanca .42s var(--sai); }
+  @keyframes balanca { 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+
+  /* senha */
+  .campo-senha { position: relative; }
+  .campo-senha input { padding-right: 52px; }
+  .olho {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 40px; border: none; background: none; border-radius: 10px;
+    color: var(--tinta-fraca); cursor: pointer; display: grid; place-items: center;
+    transition: color .15s, background .15s;
+  }
+  .olho:hover { color: var(--verde); background: rgba(31,71,57,.06); }
+  .olho .risco { transition: stroke-dashoffset .25s var(--sai); stroke-dasharray: 23; stroke-dashoffset: 0; }
+  .olho[aria-pressed="true"] { color: var(--verde); }
+  .olho[aria-pressed="true"] .risco { stroke-dashoffset: 23; }
+  .aviso-caps { margin-top: 7px; font-size: .8rem; font-weight: 600; color: #7A5510; }
+  .aviso-caps[hidden] { display: none; }
+
+  /* botão: carregando e sucesso */
+  .btn { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .btn[disabled]:not(.ok)::before {
+    content: ''; width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(247,241,227,.35); border-top-color: var(--papel);
+    animation: gira .7s linear infinite;
+  }
+  .btn.ok { background: var(--verde-2); opacity: 1; cursor: default; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+  .erro.visivel { animation: card .3s ease both; }
+
+  /* versículo: toque troca */
+  .versiculo { cursor: pointer; border-radius: 12px; padding: 8px 12px; transition: opacity .42s var(--sai), filter .42s var(--sai), transform .42s var(--sai), background .2s; }
+  .versiculo:hover { background: rgba(31,71,57,.04); }
+  .versiculo .v-texto { display: block; quotes: none; font-family: 'Fraunces', serif; font-style: italic; font-size: .98rem; line-height: 1.5; color: var(--verde); }
+  .versiculo .v-ref { display: block; margin-top: 7px; font: 600 .72rem 'Public Sans', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--terracota); }
+  .versiculo.trocando { opacity: 0; filter: blur(3px); transform: translateY(6px); }
+
+  .link-rever {
+    font: inherit; color: inherit; background: none; border: none; cursor: pointer;
+    text-decoration: underline; text-decoration-color: var(--borda); text-underline-offset: 3px;
+  }
+  .link-rever:hover { color: var(--verde); text-decoration-color: currentColor; }
+
+  /* modal: fecha com Esc; sucesso desenhado */
+  .icone-ok { display: block; margin: 0 auto 16px; color: var(--verde-2); }
+  .icone-ok .c-anel { stroke-dasharray: 176; stroke-dashoffset: 176; animation: desenha .6s .1s var(--sai) forwards; }
+  .icone-ok .c-check { stroke: var(--terracota); stroke-dasharray: 44; stroke-dashoffset: 44; animation: desenha .4s .5s var(--sai) forwards; }
+  @keyframes desenha { to { stroke-dashoffset: 0; } }
+  .modal { animation: veu .25s ease-out both; }
+  @keyframes veu { from { opacity: 0; } }
+
+  /* saída para o painel */
+  body.saindo #tela-login { animation: sair-tela .45s var(--sai) forwards; }
+  @keyframes sair-tela { to { opacity: 0; transform: translateY(-8px) scale(.99); } }
+
+  /* boas-vindas depois do login: imagem do projeto + nome da pessoa (toque para seguir) */
+  #boas-vindas { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(120% 90% at 50% 40%, #FFF8E8 0%, #F3E6C6 55%, #E9D7AE 100%); cursor: pointer;
+    animation: bv-entra .5s var(--sai) both; }
+  #boas-vindas[hidden] { display: none; }
+  #boas-vindas .bv-caixa { display: grid; justify-items: center; gap: 16px; max-width: 460px; width: 100%; text-align: center; }
+  #boas-vindas picture { display: block; }
+  #boas-vindas img { display: block; width: min(78vw, 46vh, 420px); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 28px;
+    box-shadow: 0 24px 60px -24px rgba(31, 71, 57, .55); animation: bv-img 2.8s var(--sai) both; }
+  #boas-vindas h2 { font: 700 clamp(1.6rem, 6vw, 2.2rem)/1.15 'Fraunces', serif; color: var(--verde, #1F4739); animation: bv-sobe .6s .35s var(--sai) both; }
+  #boas-vindas p { font: 500 1.02rem/1.45 'Public Sans', sans-serif; color: #4B4736; animation: bv-sobe .6s .55s var(--sai) both; }
+  #boas-vindas .bv-verso { font: italic 400 .95rem/1.45 'Fraunces', serif; color: #6B675C; animation: bv-sobe .6s .75s var(--sai) both; }
+  #boas-vindas .bv-barra { width: 140px; height: 3px; border-radius: 3px; background: rgba(31,71,57,.15); overflow: hidden; }
+  #boas-vindas .bv-barra i { display: block; height: 100%; background: var(--verde, #1F4739); transform-origin: left; animation: bv-tempo 2.8s linear both; }
+  #boas-vindas .bv-dica { font: 500 .78rem 'Public Sans', sans-serif; color: #8A8474; }
+  #boas-vindas.saindo { animation: bv-sai .4s var(--sai) forwards; }
+  @keyframes bv-entra { from { opacity: 0; } }
+  @keyframes bv-img { from { opacity: 0; transform: scale(.94); } 30% { opacity: 1; } to { transform: scale(1.02); } }
+  @keyframes bv-sobe { from { opacity: 0; transform: translateY(10px); } }
+  @keyframes bv-tempo { from { transform: scaleX(0); } }
+  @keyframes bv-sai { to { opacity: 0; transform: scale(1.02); } }
+  @media (prefers-reduced-motion: reduce) { #boas-vindas, #boas-vindas * { animation: none !important; } }
+
+  /* toast com tipo */
+  #toast { opacity: 0; transition: transform .45s var(--sai), opacity .25s; }
+  #toast.visivel { opacity: 1; }
+  #toast.erro { background: #8A3A22; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; }
+    .icone-ok .c-anel, .icone-ok .c-check { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======= vídeo de boas-vindas (D4) ======= -->
+<div id="tela-video">
+  <div class="fundo-video" aria-hidden="true"></div>
+  <video muted playsinline preload="none" poster="midia/welcome-poster.jpg" data-src="midia/welcome.mp4" aria-label="Abertura do SIGA"></video>
+  <div class="video-progresso" aria-hidden="true"><i></i></div>
+  <div class="video-topo">
+    <div class="marca-video">SIGA<em>·</em>NCC</div>
+    <div class="video-botoes">
+      <button id="btn-som" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="onda" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="mudo" d="m16 9.5 5 5m0-5-5 5"/>
+        </svg>
+        <span>Ativar som</span>
+      </button>
+      <button id="btn-pular" type="button">Pular &rsaquo;</button>
+    </div>
+  </div>
+  <div class="video-frase">
+    <p>“Porque tive fome, e me destes de comer…”</p>
+    <span>Mateus 25:35</span>
+  </div>
+</div>
+
+<!-- ======= login ======= -->
+<main id="tela-login" hidden>
+  <div class="card">
+    <h1>SIGA<em>·</em>NCC</h1>
+    <p class="sub">SIGA — Novos Começos Caxias · gestão da cesta básica</p>
+    <div class="linha-flor" aria-hidden="true">✦</div>
+
+    <form id="form-login" autocomplete="on">
+      <div class="campo">
+        <label for="login">Usuário</label>
+        <input id="login" name="username" type="text" autocomplete="username" required autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <div class="campo-senha">
+          <input id="senha" name="password" type="password" autocomplete="current-password" required>
+          <button class="olho" id="btn-olho" type="button" aria-label="Mostrar senha" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
+              <path class="risco" d="M4 4l16 16"/>
+            </svg>
+          </button>
+        </div>
+        <p class="aviso-caps" id="aviso-caps" hidden>Caps Lock está ligado</p>
+      </div>
+      <p class="dica-demo" id="dica-demo" hidden>Modo demonstração: <b>rogerio</b> (admin) ou <b>juraci</b> (voluntário), senha <b>demo</b>.</p>
+      <div class="erro" id="erro-login" role="alert"></div>
+      <button class="btn" id="btn-entrar" type="submit">Entrar</button>
+    </form>
+    <p class="rodape-card" style="margin-top:10px"><a href="#" id="link-esqueci">Esqueci minha senha</a></p>
+
+    <p class="rodape-card">
+      Ainda não tem acesso? <a href="#" id="link-acesso">Solicitar ao administrador</a>
+    </p>
+  </div>
+
+  <div class="versiculo" id="versiculo"></div>
+
+  <p class="creditos">Novos Começos Caxias · Rod. Washington Luiz, 6127 — Caxias, RJ · <button type="button" class="link-rever" id="btn-rever">rever abertura</button></p>
+</main>
+
+<!-- ======= modal: pedir acesso ======= -->
+<div class="modal" id="modal-acesso" hidden>
+  <div class="modal-cartao">
+    <div class="modal-topo">
+      <div>
+        <h2>Pedir acesso</h2>
+        <p class="sub">O administrador vai avaliar e liberar seu login.</p>
+      </div>
+      <button class="fechar" type="button" data-fechar aria-label="Fechar">&times;</button>
+    </div>
+
+    <form id="form-acesso">
+      <div class="campo">
+        <label for="a-nome">Nome completo</label>
+        <input id="a-nome" type="text" required autocomplete="name">
+      </div>
+      <div class="campo">
+        <label for="a-telefone">Telefone (com DDD)</label>
+        <input id="a-telefone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="(21) 99999-9999">
+      </div>
+      <div class="campo">
+        <label for="a-email">E-mail <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+        <input id="a-email" type="email" autocomplete="email">
+      </div>
+      <div class="campo">
+        <label for="a-motivo">Por que quer participar? <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+        <input id="a-motivo" type="text">
+      </div>
+      <div class="erro" id="erro-acesso" role="alert"></div>
+      <button class="btn" id="btn-acesso" type="submit">Enviar pedido</button>
+    </form>
+
+    <div class="sucesso" id="sucesso-acesso" hidden>
+      <svg class="icone-ok" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
+        <circle class="c-anel" cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="3.5"/>
+        <path class="c-check" d="M19 33.5 L28 42 L45 23" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p id="sucesso-acesso-texto"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ======= modal: esqueci minha senha (D24) ======= -->
+<div class="modal" id="modal-esqueci" hidden>
+  <div class="modal-cartao">
+    <div class="modal-topo">
+      <div>
+        <h2>Esqueci minha senha</h2>
+        <p class="sub">Escolha uma senha nova. Ela passa a valer quando o administrador aprovar.</p>
+      </div>
+      <button class="fechar" type="button" data-fechar aria-label="Fechar">&times;</button>
+    </div>
+    <form id="form-esqueci">
+      <div class="campo">
+        <label for="e-login">Seu usuário</label>
+        <input id="e-login" type="text" required autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="campo">
+        <label for="e-telefone">Seu telefone (com DDD)</label>
+        <input id="e-telefone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="(21) 99999-9999">
+      </div>
+      <div class="campo">
+        <label for="e-nova">Senha nova <span style="text-transform:none;letter-spacing:0;font-weight:400">(mínimo 8 caracteres)</span></label>
+        <input id="e-nova" type="password" autocomplete="new-password" required minlength="8">
+      </div>
+      <div class="campo">
+        <label for="e-repetir">Repita a senha nova</label>
+        <input id="e-repetir" type="password" autocomplete="new-password" required minlength="8">
+      </div>
+      <div class="erro" id="erro-esqueci" role="alert"></div>
+      <button class="btn" id="btn-esqueci" type="submit">Pedir aprovação</button>
+    </form>
+    <div class="sucesso" id="sucesso-esqueci" hidden>
+      <svg class="icone-ok" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
+        <circle class="c-anel" cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="3.5"/>
+        <path class="c-check" d="M19 33.5 L28 42 L45 23" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p id="sucesso-esqueci-texto"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ======= modal: troca obrigatória de senha ======= -->
+<div class="modal" id="modal-troca" hidden>
+  <div class="modal-cartao">
+    <h2>Defina sua senha</h2>
+    <p class="sub">Você entrou com uma senha temporária. Crie uma nova para continuar.</p>
+    <form id="form-troca">
+      <div class="campo">
+        <label for="t-atual">Senha temporária</label>
+        <input id="t-atual" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="campo">
+        <label for="t-nova">Nova senha <span style="text-transform:none;letter-spacing:0;font-weight:400">(mínimo 8 caracteres)</span></label>
+        <input id="t-nova" type="password" autocomplete="new-password" required minlength="8">
+      </div>
+      <div class="campo">
+        <label for="t-repetir">Repita a nova senha</label>
+        <input id="t-repetir" type="password" autocomplete="new-password" required minlength="8">
+      </div>
+      <div class="erro" id="erro-troca" role="alert"></div>
+      <button class="btn" id="btn-troca" type="submit">Salvar e continuar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ======= boas-vindas (depois de entrar) ======= -->
+<div id="boas-vindas" hidden role="dialog" aria-modal="true" aria-labelledby="bv-titulo">
+  <div class="bv-caixa">
+    <picture>
+      <source srcset="midia/boas-vindas.webp" type="image/webp">
+      <img src="midia/boas-vindas.jpg" alt="Caixa de alimentos com o logo Novos Começos e SIGA" width="1080" height="1080" decoding="async">
+    </picture>
+    <h2 id="bv-titulo">Boas-vindas!</h2>
+    <p id="bv-frase">Que bom ter você aqui. Juntos, cada cesta chega a quem precisa.</p>
+    <span class="bv-verso">“Porque tive fome, e me destes de comer…” — Mateus 25:35</span>
+    <span class="bv-barra" aria-hidden="true"><i></i></span>
+    <span class="bv-dica">toque para continuar</span>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script type="module">
+import { entrar, verificarSessao, trocarSenha, esquecerSessao, modoDemo } from './auth.js';
+import { pedirAcesso, pedirNovaSenha, mascaraTelefone, validarPedidoAcesso, soDigitos } from './acesso.js';
+import { girarVersiculo } from './fx.js';
+import { esc } from './ui.js';
+
+const $ = (sel) => document.querySelector(sel);
+if (modoDemo()) $('#dica-demo').hidden = false;
+
+const reduzMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const ler = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+// ---------- versículos (D5): alterna sozinho, toque troca ----------
+girarVersiculo($('#versiculo'), { intervalo: 16000 });
+
+// ---------- abertura (vídeo) → login ----------
+// Toca 1× por dia por aparelho: voluntário que entra várias vezes não espera de novo.
+const telaVideo = $('#tela-video');
+const telaLogin = $('#tela-login');
+const video = telaVideo.querySelector('video');
+const barra = telaVideo.querySelector('.video-progresso i');
+const HOJE = new Date().toDateString(); // dia local
+let abertura = false;
+let fallback = null;
+
+function focarCampo() {
+  if (!window.matchMedia('(pointer: fine)').matches) return; // celular: não abrir o teclado sozinho
+  const campo = $('#login').value ? $('#senha') : $('#login');
+  setTimeout(() => campo.focus({ preventScroll: true }), reduzMovimento ? 0 : 450);
+}
+
+function mostrarLogin() {
+  if (!abertura) return;
+  abertura = false;
+  clearTimeout(fallback);
+  guardar('siga:abertura', HOJE);
+  telaLogin.hidden = false;
+  telaVideo.classList.add('ocultando');
+  setTimeout(() => { video.pause(); telaVideo.hidden = true; }, reduzMovimento ? 0 : 950);
+  focarCampo();
+}
+
+function progresso() {
+  if (!abertura) return;
+  if (video.duration) barra.style.transform = 'scaleX(' + (video.currentTime / video.duration) + ')';
+  requestAnimationFrame(progresso);
+}
+
+function tocarAbertura() {
+  abertura = true;
+  telaVideo.hidden = false;
+  telaVideo.classList.remove('ocultando');
+  barra.style.transform = 'scaleX(0)';
+  if (!video.src) video.src = video.dataset.src;
+  video.currentTime = 0;
+  const p = video.play();
+  if (p && p.catch) p.catch(mostrarLogin); // autoplay bloqueado (modo economia): segue pro login
+  requestAnimationFrame(progresso);
+  clearTimeout(fallback);
+  fallback = setTimeout(mostrarLogin, 16000); // nunca prender quem espera
+  $('#btn-pular').focus({ preventScroll: true });
+}
+
+video.addEventListener('playing', () => video.classList.add('pronto'));
+video.addEventListener('ended', mostrarLogin);
+video.addEventListener('error', mostrarLogin);
+$('#btn-pular').addEventListener('click', mostrarLogin);
+// Som: o navegador só deixa tocar com som depois de um toque da pessoa.
+$('#btn-som').addEventListener('click', () => {
+  const ligar = video.muted;
+  video.muted = !ligar;
+  if (ligar) { video.volume = 1; video.play().catch(() => {}); }
+  $('#btn-som').setAttribute('aria-pressed', String(ligar));
+  $('#btn-som span').textContent = ligar ? 'Som ligado' : 'Ativar som';
+});
+document.addEventListener('keydown', (e) => { if (abertura && e.key === 'Escape') mostrarLogin(); });
+$('#btn-rever').addEventListener('click', () => { telaLogin.hidden = true; tocarAbertura(); });
+
+const ultimo = ler('siga:ultimo-login');
+if (ultimo) $('#login').value = ultimo;
+
+if (reduzMovimento || ler('siga:abertura') === HOJE) {
+  telaVideo.hidden = true;
+  telaLogin.hidden = false;
+  focarCampo();
+} else {
+  tocarAbertura();
+}
+
+// Já tem sessão válida? Direto pro painel.
+(async () => {
+  try {
+    const u = await verificarSessao();
+    if (u && !u.deve_trocar_senha) location.replace('./index.html');
+    else if (u && u.deve_trocar_senha) { if (abertura) mostrarLogin(); abrirTroca(); }
+  } catch (e) {}
+})();
+
+// ---------- toast ----------
+let toastTimer;
+function toast(msg, tipo) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = (tipo || '') + ' visivel';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('visivel'), 4200);
+}
+
+function mostrarErro(el, msg) {
+  el.textContent = msg;
+  el.classList.add('visivel');
+}
+function limparErro(el) {
+  el.classList.remove('visivel');
+}
+
+// ---------- senha: mostrar/ocultar + aviso de Caps Lock ----------
+const inpSenha = $('#senha');
+const olho = $('#btn-olho');
+olho.addEventListener('click', () => {
+  const ver = inpSenha.type === 'password';
+  inpSenha.type = ver ? 'text' : 'password';
+  olho.setAttribute('aria-pressed', String(ver));
+  olho.setAttribute('aria-label', ver ? 'Ocultar senha' : 'Mostrar senha');
+  inpSenha.focus({ preventScroll: true });
+});
+const caps = (e) => { if (e.getModifierState) $('#aviso-caps').hidden = !e.getModifierState('CapsLock'); };
+inpSenha.addEventListener('keydown', caps);
+inpSenha.addEventListener('keyup', caps);
+inpSenha.addEventListener('blur', () => { $('#aviso-caps').hidden = true; });
+
+// ---------- login ----------
+const formLogin = $('#form-login');
+const btnEntrar = $('#btn-entrar');
+let usuarioAtual = null;
+
+formLogin.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  limparErro($('#erro-login'));
+  btnEntrar.disabled = true;
+  btnEntrar.textContent = 'Entrando…';
+  const login = $('#login').value.trim();
+  try {
+    usuarioAtual = await entrar(login, inpSenha.value);
+    guardar('siga:ultimo-login', login);
+    try { localStorage.removeItem('siga:pedido-senha:' + login.toLowerCase()); } catch (e2) {}
+    if (usuarioAtual.deve_trocar_senha) {
+      abrirTroca();
+    } else {
+      const primeiro = String(usuarioAtual.nome || login).split(' ')[0];
+      btnEntrar.classList.add('ok');
+      btnEntrar.textContent = 'Entrando, ' + primeiro + '…';
+      irParaPainel();
+      return;
+    }
+  } catch (err) {
+    // Pedido de senha nova feito NESTE aparelho e ainda sem aprovação: explica em vez de só "senha inválida".
+    const pedido = ler('siga:pedido-senha:' + login.toLowerCase());
+    mostrarErro($('#erro-login'), err.message + (pedido && !/tentativas/i.test(err.message)
+      ? ' — se você pediu senha nova em ' + new Date(Number(pedido)).toLocaleDateString('pt-BR') + ', ela só vale depois que o administrador aprovar.' : ''));
+    const card = $('.card');
+    card.classList.remove('balanca'); void card.offsetWidth; card.classList.add('balanca');
+    inpSenha.select();
+  }
+  btnEntrar.disabled = false;
+  btnEntrar.textContent = 'Entrar';
+});
+
+// Depois de entrar: tela de boas-vindas com a imagem do projeto (2,8 s, ou toque para seguir) e vai pro painel.
+function irParaPainel() {
+  const nome = String((usuarioAtual && usuarioAtual.nome) || $('#login').value || '').trim().split(' ')[0];
+  const bv = $('#boas-vindas');
+  $('#bv-titulo').textContent = nome ? 'Boas-vindas, ' + nome + '!' : 'Boas-vindas!';
+  const hora = new Date().getHours();
+  $('#bv-frase').textContent = (hora < 12 ? 'Bom dia! ' : hora < 18 ? 'Boa tarde! ' : 'Boa noite! ') + 'Que bom ter você aqui. Juntos, cada cesta chega a quem precisa.';
+  let foi = false;
+  const seguir = () => {
+    if (foi) return; foi = true;
+    if (reduzMovimento) { location.href = './index.html'; return; }
+    bv.classList.add('saindo');
+    setTimeout(() => { location.href = './index.html'; }, 380);
+  };
+  setTimeout(() => document.body.classList.add('saindo'), 200);
+  setTimeout(() => { bv.hidden = false; bv.focus && bv.focus(); }, reduzMovimento ? 0 : 380);
+  bv.addEventListener('click', seguir);
+  document.addEventListener('keydown', (e) => { if (!bv.hidden && (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape')) seguir(); });
+  setTimeout(seguir, reduzMovimento ? 2200 : 3200);
+}
+
+// Deixa a imagem de boas-vindas e o painel prontos enquanto a pessoa digita (sem atraso depois do "Entrar").
+window.addEventListener('load', () => {
+  const pre = new Image(); pre.src = 'midia/' + (document.createElement('canvas').toDataURL('image/webp').startsWith('data:image/webp') ? 'boas-vindas.webp' : 'boas-vindas.jpg');
+  const l = document.createElement('link'); l.rel = 'prefetch'; l.href = './index.html'; document.head.appendChild(l);
+});
+
+// ---------- pedir acesso ----------
+const modalAcesso = $('#modal-acesso');
+const fecharAcesso = () => { modalAcesso.hidden = true; $('#link-acesso').focus({ preventScroll: true }); };
+$('#link-acesso').addEventListener('click', (e) => {
+  e.preventDefault();
+  modalAcesso.hidden = false;
+  $('#a-nome').focus();
+});
+modalAcesso.addEventListener('click', (e) => {
+  if (e.target === modalAcesso || e.target.closest('[data-fechar]')) fecharAcesso();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modalAcesso.hidden) fecharAcesso(); });
+
+const telInput = $('#a-telefone');
+telInput.addEventListener('input', () => { telInput.value = mascaraTelefone(telInput.value); });
+
+$('#form-acesso').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  limparErro($('#erro-acesso'));
+  const dados = {
+    nome_completo: $('#a-nome').value.trim(),
+    telefone: telInput.value,
+    email: $('#a-email').value.trim(),
+    motivo: $('#a-motivo').value.trim()
+  };
+  const erros = validarPedidoAcesso(dados);
+  if (Object.keys(erros).length > 0) {
+    mostrarErro($('#erro-acesso'), Object.values(erros)[0]);
+    return;
+  }
+  const btn = $('#btn-acesso');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+  try {
+    const r = await pedirAcesso(dados);
+    $('#form-acesso').hidden = true;
+    $('#sucesso-acesso-texto').innerHTML = esc(r.mensagem || 'Pedido enviado!') + '<br><br><strong>Guarde seu telefone</strong> — o administrador vai entrar em contato.';
+    $('#sucesso-acesso').hidden = false;
+  } catch (err) {
+    mostrarErro($('#erro-acesso'), err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar pedido';
+  }
+});
+
+// ---------- esqueci minha senha (D24) ----------
+const modalEsqueci = $('#modal-esqueci');
+const fecharEsqueci = () => { modalEsqueci.hidden = true; $('#link-esqueci').focus({ preventScroll: true }); };
+$('#link-esqueci').addEventListener('click', (e) => {
+  e.preventDefault();
+  $('#form-esqueci').hidden = false;
+  $('#sucesso-esqueci').hidden = true;
+  $('#e-login').value = $('#login').value.trim();
+  modalEsqueci.hidden = false;
+  ($('#e-login').value ? $('#e-telefone') : $('#e-login')).focus();
+});
+modalEsqueci.addEventListener('click', (e) => {
+  if (e.target === modalEsqueci || e.target.closest('[data-fechar]')) fecharEsqueci();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modalEsqueci.hidden) fecharEsqueci(); });
+const telEsqueci = $('#e-telefone');
+telEsqueci.addEventListener('input', () => { telEsqueci.value = mascaraTelefone(telEsqueci.value); });
+
+$('#form-esqueci').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  limparErro($('#erro-esqueci'));
+  const login = $('#e-login').value.trim().toLowerCase();
+  const nova = $('#e-nova').value;
+  if (!login) { mostrarErro($('#erro-esqueci'), 'Escreva seu usuário'); return; }
+  if (soDigitos(telEsqueci.value).length < 10) { mostrarErro($('#erro-esqueci'), 'Telefone com DDD (ex.: (21) 98888-7777)'); return; }
+  if (nova.length < 8) { mostrarErro($('#erro-esqueci'), 'A senha nova precisa de ao menos 8 caracteres'); return; }
+  if (nova !== $('#e-repetir').value) { mostrarErro($('#erro-esqueci'), 'As senhas novas não conferem'); return; }
+  const btn = $('#btn-esqueci');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+  try {
+    const r = await pedirNovaSenha({ login, telefone: telEsqueci.value, senha_nova: nova });
+    guardar('siga:pedido-senha:' + login, String(Date.now()));
+    $('#form-esqueci').hidden = true;
+    $('#form-esqueci').reset();
+    $('#sucesso-esqueci-texto').innerHTML = esc(r.mensagem || 'Pedido enviado!') + '<br><br>Até lá, a senha antiga continua valendo.';
+    $('#sucesso-esqueci').hidden = false;
+  } catch (err) {
+    mostrarErro($('#erro-esqueci'), err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Pedir aprovação';
+  }
+});
+
+// ---------- troca obrigatória de senha ----------
+const modalTroca = $('#modal-troca');
+function abrirTroca() {
+  modalTroca.hidden = false;
+  $('#t-atual').focus();
+}
+$('#form-troca').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  limparErro($('#erro-troca'));
+  const atual = $('#t-atual').value;
+  const nova = $('#t-nova').value;
+  const repetir = $('#t-repetir').value;
+  if (nova !== repetir) { mostrarErro($('#erro-troca'), 'As senhas novas não conferem'); return; }
+  const btn = $('#btn-troca');
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+  try {
+    await trocarSenha(atual, nova);
+    toast('Senha definida com sucesso!', 'ok');
+    modalTroca.hidden = true;
+    irParaPainel();
+  } catch (err) {
+    mostrarErro($('#erro-troca'), err.message);
+    btn.disabled = false;
+    btn.textContent = 'Salvar e continuar';
+  }
+});
+</script>
+<script>
+  // PWA: instala o app e deixa abrir sem sinal (sw.js). Erro aqui nunca pode atrapalhar a tela.
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>

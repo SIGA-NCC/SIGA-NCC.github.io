@@ -1,0 +1,1837 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  // Atrás de um caminho (ex.: /siga-ncc) a barra final é obrigatória p/ os links relativos: corrige sozinho.
+  if (!/\/$|\.[a-z0-9]+$/i.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);
+</script>
+<title>SIGA-NCC · Painel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231F4739'/%3E%3Cpath d='M9 20c3 3 11 3 14-1M10 13c2-4 10-4 12 0' fill='none' stroke='%23F7F1E3' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16.5' r='2.2' fill='%23E8A33D'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="estoque-mapa.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F4739">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./painel-ncc.css">
+<style>
+  :root {
+    --papel: #F7F1E3;
+    --verde: #1F4739;
+    --verde-2: #2E6B52;
+    --terracota: #C45D3C;
+    --ambar: #E8A33D;
+    --tinta: #2A2A26;
+    --tinta-fraca: #6B675C;
+    --borda: #D9CDB0;
+    --radius: 16px;
+    --sombra: 0 12px 34px -14px rgba(31, 71, 57, .35);
+    /* tokens do painel (motor SVG portado do SIGMA v2) — alias sobre a paleta do SIGA */
+    --txt: var(--tinta);
+    --txt2: var(--tinta-fraca);
+    --txt3: #8A8474;
+    --cartao: #FFFDF8;
+    --cartao-alto: #FFFBF0;
+    --campo: var(--papel);
+    --borda-forte: var(--borda);
+    --ver-fundo: #FFFDF8;
+    --sel-fundo: rgba(46, 107, 82, .12);
+    --linha-hover: rgba(31, 71, 57, .05);
+    --hover-fundo: rgba(31, 71, 57, .06);
+    --hover-borda: var(--borda);
+    --azul: var(--verde-2);
+    --acento: var(--verde-2);
+    --vermelho: #B4442B;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 22px;
+    --fs-xs: .72rem; --fs-sm: .84rem; --fs-base: 1rem; --fs-lg: 1.18rem;
+    --r-sm: 9px; --r-md: 13px; --r-lg: 18px;
+    --touch-min: 44px;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Public Sans', sans-serif;
+    color: var(--tinta);
+    background:
+      radial-gradient(900px 400px at 100% 0%, rgba(232,163,61,.1), transparent 55%),
+      var(--papel);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- topo ---------- */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(247,241,227,.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--borda);
+  }
+  .topo-inner {
+    max-width: 1020px; margin: 0 auto;
+    padding: 12px 18px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .marca {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--verde);
+  }
+  .marca em { color: var(--terracota); font-style: normal; }
+  .quem {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .88rem;
+  }
+  .quem .nome { font-weight: 600; }
+  .selo {
+    font: 600 .68rem 'Public Sans', sans-serif;
+    letter-spacing: .1em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--verde);
+    color: var(--papel);
+  }
+  .selo.vol { background: var(--ambar); color: var(--verde); }
+  .sair {
+    font: 500 .85rem 'Public Sans', sans-serif;
+    background: none;
+    border: 1.5px solid var(--borda);
+    color: var(--tinta-fraca);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .sair:hover { border-color: var(--terracota); color: var(--terracota); }
+
+  /* ---------- abas ---------- */
+  nav {
+    max-width: 1020px; margin: 0 auto;
+    padding: 14px 18px 0;
+    display: flex; gap: 6px;
+    overflow-x: auto;
+    position: relative;
+    scrollbar-width: thin; scrollbar-color: var(--borda) transparent;
+  }
+  nav button {
+    font: 600 .9rem 'Public Sans', sans-serif;
+    background: none; border: none;
+    color: var(--tinta-fraca);
+    padding: 10px 16px 12px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: color .2s;
+  }
+  nav button:hover { color: var(--verde); }
+  nav button.ativa { color: var(--verde); }
+  .nav-ind {
+    position: absolute; left: 0; bottom: 0; height: 3px; width: 0;
+    background: var(--terracota); border-radius: 3px 3px 0 0;
+    transition: transform .38s cubic-bezier(.16,1,.3,1), width .38s cubic-bezier(.16,1,.3,1);
+    pointer-events: none;
+  }
+  nav button:disabled { opacity: .45; cursor: default; }
+  nav button[hidden] { display: none; }
+
+  main { max-width: 1020px; margin: 0 auto; padding: 20px 18px 60px; }
+  section[hidden] { display: none; }
+  .btn[hidden], .btn-mini[hidden], .chip[hidden] { display: none; }
+
+  /* ---------- cartões ---------- */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: #FFFDF7;
+    border: 1px solid var(--borda);
+    border-radius: var(--radius);
+    padding: 16px 16px 14px;
+    box-shadow: var(--sombra);
+  }
+  .kpi .valor {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: var(--verde);
+    line-height: 1.1;
+  }
+  .kpi.destaque { background: var(--verde); border-color: var(--verde); }
+  .kpi.destaque .valor { color: var(--ambar); font-size: 2.6rem; }
+  .kpi.destaque .rotulo { color: rgba(247,241,227,.85); }
+  .kpi .rotulo {
+    margin-top: 5px;
+    font: 600 .74rem 'Public Sans', sans-serif;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--tinta-fraca);
+  }
+  .kpi .sub { margin-top: 3px; font-size: .8rem; color: var(--tinta-fraca); }
+
+  .painel-bloco {
+    background: #FFFDF7;
+    border: 1px solid var(--borda);
+    border-radius: var(--radius);
+    box-shadow: var(--sombra);
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .painel-bloco h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    color: var(--verde);
+    margin-bottom: 14px;
+  }
+
+  /* ---------- tabelas/listas ---------- */
+  .lista { list-style: none; }
+  .lista li {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 10px 2px;
+    border-bottom: 1px dashed var(--borda);
+    font-size: .93rem;
+  }
+  .lista li:last-child { border-bottom: none; }
+  .lista .esq { display: flex; flex-direction: column; gap: 2px; }
+  .lista .forte { font-weight: 600; }
+  .lista .fraco { font-size: .8rem; color: var(--tinta-fraca); }
+  .badge {
+    font: 600 .72rem 'Public Sans', sans-serif;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    background: var(--papel);
+    border: 1px solid var(--borda);
+    color: var(--tinta-fraca);
+  }
+  .badge.ok { background: #E3EFE7; border-color: #B9D6C4; color: var(--verde); }
+  .badge.riso { background: #FBE8E2; border-color: #EEC3B4; color: #8A3A22; }
+  .badge.ambar { background: #FBEFD5; border-color: #EBD3A0; color: #7A5510; }
+
+  .alerta-linha { cursor: pointer; }
+  .alerta-linha:hover { background: rgba(232,163,61,.08); }
+
+  /* ---------- formulários ---------- */
+  form { display: grid; gap: 14px; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px) { .duas { grid-template-columns: 1fr; } }
+  label {
+    display: block;
+    font: 600 .76rem 'Public Sans', sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--verde);
+    margin-bottom: 6px;
+  }
+  input, select {
+    width: 100%;
+    font: 1rem 'Public Sans', sans-serif;
+    color: var(--tinta);
+    background: var(--papel);
+    border: 1.5px solid var(--borda);
+    border-radius: 11px;
+    padding: 12px 13px;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--verde-2);
+    box-shadow: 0 0 0 3px rgba(46,107,82,.14);
+  }
+  .btn {
+    font: 600 .95rem 'Public Sans', sans-serif;
+    color: var(--papel);
+    background: var(--verde);
+    border: none; border-radius: 11px;
+    padding: 13px 22px;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--verde-2); }
+  .btn[disabled] { opacity: .6; cursor: wait; }
+  .btn-mini {
+    font: 600 .78rem 'Public Sans', sans-serif;
+    background: none;
+    border: 1.5px solid var(--borda);
+    color: var(--verde);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .btn-mini:hover { border-color: var(--verde); }
+  .btn-mini[disabled] { opacity: .5; cursor: wait; }
+
+  .mini-inp {
+    width: 4.6rem; padding: 6px 8px; font-size: .85rem;
+    border-radius: 8px; border-width: 1px;
+  }
+  .lista .dir { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .admin-bloco { margin-bottom: 18px; }
+  .admin-bloco h3 {
+    font-family: 'Fraunces', serif; font-size: 1.02rem; color: var(--verde);
+    margin: 4px 0 10px;
+  }
+  .admin-bloco .painel-bloco { margin-bottom: 0; }
+  pre.saude {
+    background: #12281F; color: #CFE3D6; border-radius: 12px;
+    padding: 14px 16px; font: .8rem ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    white-space: pre-wrap; overflow-x: auto; margin-top: 12px;
+  }
+  .separador { height: 1px; background: var(--borda); margin: 26px 0; }
+
+  .erro {
+    display: none;
+    padding: 11px 14px;
+    background: #FBE8E2;
+    border: 1px solid #EEC3B4;
+    border-radius: 8px;
+    color: #8A3A22;
+    font-size: .9rem;
+  }
+  .erro.visivel { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th {
+    text-align: left;
+    font: 600 .72rem 'Public Sans', sans-serif;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--tinta-fraca);
+    padding: 8px 8px 10px;
+    border-bottom: 2px solid var(--borda);
+  }
+  td { padding: 10px 8px; border-bottom: 1px dashed var(--borda); }
+  tr:last-child td { border-bottom: none; }
+  .vazio { color: var(--tinta-fraca); font-style: italic; font-size: .9rem; padding: 12px 2px; }
+
+  .cabecalho-bloco {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .cabecalho-bloco h2 { margin-bottom: 0; }
+  .filtros { display: flex; gap: 8px; align-items: center; }
+  .filtros select { width: auto; padding: 8px 10px; font-size: .88rem; }
+
+  .versiculo-rodape {
+    margin-top: 30px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: .95rem;
+    line-height: 1.5;
+    color: var(--verde);
+    max-width: 46ch;
+    margin-left: auto; margin-right: auto;
+  }
+  .versiculo-rodape span {
+    display: block; margin-top: 6px;
+    font: 600 .7rem 'Public Sans', sans-serif;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--terracota);
+  }
+
+  /* ---------- modal troca de senha ---------- */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(18,40,31,.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; backdrop-filter: blur(3px);
+    padding: 20px;
+  }
+  .modal[hidden] { display: none; }
+  .modal-cartao {
+    width: min(420px, 100%);
+    background: #FFFDF7;
+    border-radius: var(--radius);
+    padding: 28px 26px;
+    box-shadow: var(--sombra);
+  }
+  .modal-cartao h2 { font-family: 'Fraunces', serif; color: var(--verde); font-size: 1.4rem; margin-bottom: 6px; }
+  .modal-cartao .sub { color: var(--tinta-fraca); font-size: .9rem; margin-bottom: 18px; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 24px;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--verde); color: var(--papel);
+    padding: 13px 22px; border-radius: 12px;
+    font: 500 .92rem 'Public Sans', sans-serif;
+    box-shadow: var(--sombra);
+    transition: transform .35s ease;
+    z-index: 60; max-width: min(420px, 92vw); text-align: center;
+  }
+  #toast.visivel { transform: translateX(-50%) translateY(0); }
+
+  /* =========================================================
+     Movimento e feedback (etapa 1 — "painel vivo")
+     Tudo parte do estado final visível; só entra com transform/opacity.
+     ========================================================= */
+  :root { --sai: cubic-bezier(.16, 1, .3, 1); }
+  ::selection { background: rgba(232,163,61,.35); color: var(--verde); }
+  .kpi .valor, td, .badge, .lista .fraco { font-variant-numeric: lining-nums tabular-nums; }
+  button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
+    outline: 2px solid var(--verde-2); outline-offset: 3px; border-radius: 8px;
+  }
+  nav button:focus-visible { outline-offset: -2px; }
+
+  /* troca de aba */
+  main > section.aba-entra { animation: aba-entra .34s var(--sai) both; }
+  @keyframes aba-entra { from { opacity: 0; transform: translateY(10px); } }
+
+  /* KPIs e blocos entram em escada na 1ª carga */
+  .kpis .kpi, .painel-bloco { transition: transform .25s var(--sai), box-shadow .25s var(--sai); }
+  .kpi:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px rgba(31,71,57,.4); }
+  .kpis.entra .kpi, main > section.aba-entra .painel-bloco { animation: subir-leve .5s var(--sai) both; animation-delay: calc(var(--i, 0) * 55ms); }
+  @keyframes subir-leve { from { opacity: 0; transform: translateY(14px); } }
+
+  /* listas em cascata */
+  .entra > * { animation: subir-leve .4s var(--sai) both; animation-delay: calc(var(--i, 0) * 45ms); }
+
+  /* esqueleto */
+  .lista li.sk { gap: 18px; padding: 14px 2px; }
+  .sk-barra, .sk-pilula {
+    height: 14px; border-radius: 7px;
+    background: linear-gradient(90deg, #EDE4CC 25%, #F7F1E3 50%, #EDE4CC 75%);
+    background-size: 220% 100%;
+    animation: brilho 1.4s linear infinite;
+  }
+  .sk-barra { flex: 1; max-width: 60%; }
+  .sk-pilula { width: 96px; height: 22px; border-radius: 999px; }
+  @keyframes brilho { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+  .lista li.sk-verso {
+    display: block; border: none; padding: 16px 4px 4px; text-align: center;
+    font: italic .9rem/1.5 'Fraunces', serif; color: var(--verde);
+    animation: subir-leve .6s .5s var(--sai) both;
+  }
+  .sk-verso span, .vazio-verso span {
+    display: block; margin-top: 4px;
+    font: 600 .68rem 'Public Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--terracota);
+  }
+
+  /* estado vazio com versículo */
+  .lista li.vazio-verso {
+    display: block; text-align: center; border: none; padding: 18px 8px 6px;
+  }
+  .vazio-verso strong { display: block; font: 600 1rem 'Public Sans', sans-serif; color: var(--verde); margin-bottom: 10px; }
+  .vazio-verso q { display: block; quotes: none; font: italic .9rem/1.5 'Fraunces', serif; color: var(--tinta-fraca); max-width: 44ch; margin: 0 auto; }
+
+  /* versículo do rodapé */
+  .versiculo-rodape { cursor: pointer; border-radius: 12px; padding: 8px 12px; transition: opacity .42s var(--sai), filter .42s var(--sai), transform .42s var(--sai); }
+  .versiculo-rodape:hover { background: rgba(31,71,57,.04); }
+  .versiculo-rodape .v-texto { quotes: none; display: block; }
+  .versiculo-rodape.trocando { opacity: 0; filter: blur(3px); transform: translateY(6px); }
+
+  /* botões: pressionar, carregando */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: background .15s, transform .12s var(--sai), box-shadow .2s; }
+  .btn:active:not([disabled]), .btn-mini:active:not([disabled]), .sair:active { transform: scale(.97); }
+  .btn[disabled]::before {
+    content: ''; width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid rgba(247,241,227,.35); border-top-color: var(--papel);
+    animation: gira .7s linear infinite;
+  }
+  .btn-mini { transition: border-color .15s, transform .12s var(--sai); }
+  .btn-mini.carregando::before {
+    content: ''; display: inline-block; width: 11px; height: 11px; margin-right: 7px; vertical-align: -1px; border-radius: 50%;
+    border: 2px solid var(--borda); border-top-color: var(--verde); animation: gira .7s linear infinite;
+  }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  /* erro: balança uma vez */
+  .erro.visivel { animation: balanca .42s var(--sai); }
+  @keyframes balanca { 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+  input:invalid:not(:placeholder-shown):not(:focus) { border-color: #D9A08C; }
+  input, select { transition: border-color .15s, box-shadow .2s; }
+
+  /* alerta lido */
+  .alerta-linha { transition: opacity .35s, background .2s, transform .35s var(--sai); }
+  .alerta-linha.lido { opacity: .4; transform: translateX(6px); pointer-events: none; }
+  .alerta-linha.lido .forte { text-decoration: line-through; text-decoration-color: var(--borda); }
+
+  /* toast com tipo */
+  #toast { opacity: 0; transition: transform .45s var(--sai), opacity .25s; display: flex; align-items: center; gap: 10px; }
+  #toast.visivel { opacity: 1; }
+  #toast::before { content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--ambar); }
+  #toast.ok::before { background: #7FD1A4; }
+  #toast.erro { background: #8A3A22; }
+  #toast.erro::before { background: #FFD3C4; }
+
+  /* faixa de demonstração */
+  .sub-alerta { color: #8A3A22 !important; font-weight: 600; }
+  #faixa-demo {
+    position: relative;
+    background: var(--ambar); color: var(--verde);
+    font: 500 .78rem 'Public Sans', sans-serif; text-align: center; padding: 6px 12px;
+  }
+  #faixa-demo[hidden] { display: none; }
+  #demo-reiniciar {
+    font: inherit; margin-left: 6px; border: 1px solid var(--verde); background: transparent;
+    color: var(--verde); border-radius: 999px; padding: 1px 10px; cursor: pointer;
+  }
+
+  /* celebração (momento único: doação recebida / cesta montada) */
+  .celebra {
+    position: fixed; inset: 0; z-index: 70;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    background: rgba(18,40,31,.5); backdrop-filter: blur(3px);
+    animation: veu .3s ease-out both;
+  }
+  .celebra.saindo { animation: veu .26s ease-in reverse both; }
+  @keyframes veu { from { opacity: 0; } }
+  .celebra-cartao {
+    width: min(400px, 100%); text-align: center;
+    background: #FFFDF7; border-radius: 22px; padding: 30px 26px 24px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.45);
+    animation: cartao-sobe .6s var(--sai) both;
+  }
+  .celebra.saindo .celebra-cartao { animation: cartao-sobe .26s ease-in reverse both; }
+  @keyframes cartao-sobe { from { opacity: 0; transform: translateY(26px) scale(.94); } }
+  .celebra-selo { position: relative; width: 64px; height: 64px; margin: 0 auto 14px; color: var(--verde-2); }
+  .c-anel { stroke-dasharray: 176; stroke-dashoffset: 176; animation: desenha .6s .15s var(--sai) forwards; }
+  .c-check { stroke: var(--terracota); stroke-dasharray: 44; stroke-dashoffset: 44; animation: desenha .4s .55s var(--sai) forwards; }
+  @keyframes desenha { to { stroke-dashoffset: 0; } }
+  .celebra-graos { position: absolute; inset: 0; pointer-events: none; }
+  .celebra-graos i { position: absolute; left: 50%; top: 50%; width: 7px; height: 11px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; opacity: 0; }
+  .celebra h2 { font: 700 1.45rem/1.2 'Fraunces', serif; color: var(--verde); text-wrap: balance; }
+  .celebra-detalhe { margin-top: 6px; color: var(--tinta-fraca); font-size: .95rem; }
+  .celebra blockquote {
+    margin: 18px 0 20px; padding-top: 16px; border-top: 1px dashed var(--borda);
+    font: italic .95rem/1.5 'Fraunces', serif; color: var(--verde);
+    animation: subir-leve .6s .7s var(--sai) both;
+  }
+  .celebra blockquote span {
+    display: block; margin-top: 6px;
+    font: 600 .68rem 'Public Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--terracota);
+  }
+
+  /* =========================================================
+     Etapa 3 — Receber e Estoque
+     ========================================================= */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .chips:empty { display: none; }
+  .chip {
+    font: 600 .86rem 'Public Sans', sans-serif;
+    color: var(--verde); background: var(--papel);
+    border: 1.5px solid var(--borda); border-radius: 999px;
+    padding: 9px 15px; min-height: 40px; cursor: pointer;
+    transition: background .18s, border-color .18s, color .18s, transform .12s var(--sai);
+  }
+  .chip:hover { border-color: var(--verde-2); }
+  .chip:active { transform: scale(.96); }
+  .chip[aria-pressed="true"] { background: var(--verde); border-color: var(--verde); color: var(--papel); }
+
+  .passo { display: flex; align-items: stretch; gap: 6px; }
+  .passo input { text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .passo-btn {
+    flex: none; width: 48px; border-radius: 11px;
+    border: 1.5px solid var(--borda); background: #FFFDF7; color: var(--verde);
+    display: grid; place-items: center; cursor: pointer;
+    transition: border-color .15s, background .15s, transform .12s var(--sai);
+  }
+  .passo-btn:hover { border-color: var(--verde-2); background: rgba(46,107,82,.06); }
+  .passo-btn:active { transform: scale(.94); }
+  .atalhos { display: flex; gap: 6px; margin-top: 8px; }
+  .atalho {
+    font: 600 .78rem 'Public Sans', sans-serif; color: var(--tinta-fraca);
+    background: none; border: 1px dashed var(--borda); border-radius: 999px;
+    padding: 5px 11px; cursor: pointer; transition: color .15s, border-color .15s;
+  }
+  .atalho:hover { color: var(--verde); border-color: var(--verde-2); }
+  input.pulso { animation: pulso .35s var(--sai); }
+  @keyframes pulso { 40% { box-shadow: 0 0 0 4px rgba(232,163,61,.35); } }
+
+  .dica-campo { min-height: 1.2em; margin-top: 6px; font-size: .8rem; font-weight: 600; transition: color .2s; }
+  .dica-campo.ok { color: var(--verde-2); }
+  .dica-campo.ambar { color: #7A5510; }
+  .dica-campo.riso { color: #8A3A22; }
+
+  #r-recentes li.novo { animation: chega .5s var(--sai) both; }
+  @keyframes chega { from { opacity: 0; transform: translateY(-8px); background: rgba(232,163,61,.18); } }
+
+  .busca { width: 220px; max-width: 100%; padding: 8px 12px; font-size: .88rem; border-radius: 999px; }
+  .filtros { flex-wrap: wrap; justify-content: flex-end; }
+  .resumo { margin: -4px 0 12px; font-size: .84rem; color: var(--tinta-fraca); }
+  .resumo b { color: var(--verde); }
+  /* celular: cada lote vira um bloco empilhado */
+  @media (max-width: 560px) {
+    #aba-estoque thead { display: none; }
+    #aba-estoque tbody tr {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
+      padding: 12px 2px; border-bottom: 1px dashed var(--borda);
+    }
+    #aba-estoque tbody tr:last-child { border-bottom: none; }
+    #aba-estoque td { border: none; padding: 0; }
+    #aba-estoque td[data-c="produto"] { flex: 1 1 calc(100% - 110px); }
+    #aba-estoque td[data-c="qtd"] { flex: 0 0 auto; margin-left: auto; font-weight: 700; color: var(--verde); white-space: nowrap; }
+    #aba-estoque td[data-c="info"] { flex: 0 0 auto; font-size: .8rem; color: var(--tinta-fraca); }
+    #aba-estoque td[data-l]::before { content: attr(data-l) ' · '; font-weight: 600; color: var(--verde); }
+    #aba-estoque td[colspan] { flex: 1 1 100%; }
+    #aba-estoque .filtros { width: 100%; justify-content: flex-start; }
+    #aba-estoque .filtros .busca { flex: 1 1 100%; width: auto; }
+    #aba-estoque .filtros label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    #aba-estoque .filtros select { flex: 1; }
+  }
+  /* =========================================================
+     Etapa 4 — Cestas
+     ========================================================= */
+  .rotulo-lista { display: block; font: 600 .76rem 'Public Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--verde); margin-bottom: 8px; }
+
+  /* barra de "quantas cestas cabem" por item; o que limita fica em destaque */
+  .barra { display: block; height: 6px; border-radius: 3px; background: #EDE4CC; margin-top: 6px; overflow: hidden; max-width: 220px; }
+  .barra i { display: block; height: 100%; width: 100%; border-radius: 3px; background: var(--verde-2); transform-origin: left; transform: scaleX(var(--p, 0)); transition: transform .8s var(--sai); }
+  .barra.gargalo i { background: var(--ambar); }
+  .barra.zero i { background: var(--terracota); }
+  .gargalo-tag { color: #7A5510; font-weight: 600; }
+
+  /* conferência: o que a cesta leva */
+  .conferencia { list-style: none; display: grid; gap: 2px; background: var(--papel); border: 1px solid var(--borda); border-radius: 12px; padding: 6px 12px; }
+  .conferencia li { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: .93rem; border-bottom: 1px dashed var(--borda); }
+  .conferencia li:last-child { border-bottom: none; }
+  .conferencia .marca {
+    flex: none; width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--verde-2); display: grid; place-items: center; color: #FFFDF7;
+    transition: background .25s var(--sai), border-color .25s;
+  }
+  .conferencia .marca svg { width: 12px; height: 12px; stroke-dasharray: 18; stroke-dashoffset: 18; transition: stroke-dashoffset .3s var(--sai); }
+  .conferencia .nome { flex: 1; font-weight: 600; transition: color .3s, text-decoration-color .3s; }
+  .conferencia .qtd { font-variant-numeric: lining-nums tabular-nums; color: var(--tinta-fraca); white-space: nowrap; }
+  .conferencia li.falta .marca { border-color: var(--terracota); background: #FBE8E2; }
+  .conferencia li.falta .qtd { color: #8A3A22; font-weight: 600; }
+  /* ao confirmar: cada item é "riscado" em sequência */
+  .conferencia.baixando li.ok { transition: opacity .4s; transition-delay: calc(var(--i, 0) * 110ms); }
+  .conferencia.baixando li.ok .marca { background: var(--verde-2); transition-delay: calc(var(--i, 0) * 110ms); }
+  .conferencia.baixando li.ok .marca svg { stroke-dashoffset: 0; transition-delay: calc(var(--i, 0) * 110ms + 120ms); }
+  .conferencia.baixando li.ok .nome { text-decoration: line-through; text-decoration-color: var(--verde-2); color: var(--tinta-fraca); transition-delay: calc(var(--i, 0) * 110ms + 120ms); }
+
+  .bloqueio { font-size: .88rem; color: #8A3A22; background: #FBE8E2; border: 1px solid #EEC3B4; border-radius: 10px; padding: 10px 12px; }
+  .bloqueio[hidden] { display: none; }
+  .acoes-cesta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .btn.confirma { background: var(--terracota); animation: pulso-btn .5s var(--sai); }
+  .btn.confirma:hover { background: #AD4D2F; }
+  .btn[disabled].travado { opacity: .5; cursor: not-allowed; }
+  .btn[disabled].travado::before { display: none; }
+  @keyframes pulso-btn { from { transform: scale(.97); } }
+  #cesta-recentes tr.novo td { animation: chega-tr .6s var(--sai) both; }
+  @keyframes chega-tr { from { background: rgba(232,163,61,.22); } }
+
+  @media (max-width: 560px) {
+    #cesta-itens li { flex-wrap: wrap; }
+    #cesta-itens .esq { flex: 1 1 100%; }
+    #cesta-itens .dir { width: 100%; justify-content: flex-start; }
+    #aba-cestas thead { display: none; }
+    #aba-cestas #cesta-recentes tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; padding: 11px 2px; border-bottom: 1px dashed var(--borda); }
+    #aba-cestas #cesta-recentes td { border: none; padding: 0; }
+    #aba-cestas #cesta-recentes td[data-c="quem"] { flex: 1 1 calc(100% - 90px); }
+    #aba-cestas #cesta-recentes td[data-c="itens"] { margin-left: auto; font-weight: 700; color: var(--verde); }
+    #aba-cestas #cesta-recentes td[data-c="info"] { font-size: .8rem; color: var(--tinta-fraca); }
+  }
+  /* =========================================================
+     Etapa 5 — Movimentos
+     ========================================================= */
+  .chip small { font-weight: 500; opacity: .7; margin-left: 4px; font-variant-numeric: lining-nums tabular-nums; }
+  #corpo-movimentos tr.dia td { padding: 16px 8px 6px; border-bottom: 2px solid var(--borda); font: 600 .74rem 'Public Sans', sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--verde); }
+  #corpo-movimentos tr.dia:first-child td { padding-top: 4px; }
+  .qtd-mov { font-weight: 700; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+  .qtd-mov.mais { color: var(--verde-2); }
+  .qtd-mov.menos { color: #8A3A22; }
+  @media (max-width: 560px) {
+    #aba-movimentos thead { display: none; }
+    #aba-movimentos #corpo-movimentos tr:not(.dia) { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 12px; padding: 11px 2px; border-bottom: 1px dashed var(--borda); }
+    #aba-movimentos #corpo-movimentos tr.dia { display: block; }
+    #aba-movimentos #corpo-movimentos td { border: none; padding: 0; }
+    #aba-movimentos #corpo-movimentos tr.dia td { padding: 14px 0 6px; display: block; }
+    #aba-movimentos td[data-c="produto"] { flex: 1 1 calc(100% - 120px); font-weight: 600; }
+    #aba-movimentos td[data-c="qtd"] { margin-left: auto; }
+    #aba-movimentos td[data-c="info"] { font-size: .8rem; color: var(--tinta-fraca); }
+  }
+  .lista-lotes { margin-top: 4px; }
+  .lista-lotes > summary { cursor: pointer; font: 600 .9rem 'Public Sans', sans-serif; color: var(--verde-2); padding: 12px 4px; list-style-position: inside; }
+  .lista-lotes[open] > summary { margin-bottom: 8px; }
+  .legenda-mapa { margin-top: 14px; font-size: .8rem; color: var(--tinta-fraca); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .legenda-mapa { gap: 6px 16px; }
+  .legenda-mapa .leg { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .legenda-mapa .pino { margin: 0; }
+  .novo-produto { margin-top: 12px; padding: 12px 14px; border: 1px dashed var(--verde-2); border-radius: 12px; background: rgba(46,107,82,.05); display: grid; gap: 10px; }
+  .novo-produto[hidden] { display: none; }
+  .novo-produto .dica-campo { margin: 0; font-weight: 500; }
+  .chip-novo { border-style: dashed; color: var(--verde-2); }
+  .sr-so { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* opções (rádio) da aba Cestas: parecem chips; o escolhido fica verde */
+  .chip.opcao { display: inline-flex; align-items: center; gap: 8px; }
+  .chip.opcao input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .chip.opcao:has(input:checked) { background: var(--verde); border-color: var(--verde); color: var(--papel); }
+  .chip.opcao:has(input:focus-visible) { outline: 2px solid var(--ambar); outline-offset: 2px; }
+  .trilha-vazio { display: none; }
+  .sub-abas { margin-bottom: 14px; }
+  .sub-abas .chip small { font-weight: 700; margin-left: 4px; }
+  .seletor { margin-bottom: 4px; }
+  .add-item { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .add-item select { flex: 1 1 200px; width: auto; padding: 8px 10px; font-size: .9rem; }
+  .conferencia li .passo-mini { display: flex; align-items: center; gap: 4px; }
+  .conferencia li .passo-mini button { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--borda); background: #FFFDF7; color: var(--verde); cursor: pointer; font: 700 1rem 'Public Sans', sans-serif; line-height: 1; }
+  .conferencia li .passo-mini input { width: 4.2rem; padding: 6px; text-align: center; font-size: .9rem; border-radius: 8px; border-width: 1px; }
+  .conferencia li .tirar { border: none; background: none; color: var(--tinta-fraca); cursor: pointer; font-size: 1.2rem; width: 32px; height: 32px; border-radius: 8px; }
+  .conferencia li .tirar:hover { color: var(--terracota); background: #FBE8E2; }
+  .conferencia li .saldo-item { font-size: .76rem; color: var(--tinta-fraca); display: block; font-weight: 500; }
+  .conferencia li.falta .saldo-item { color: #8A3A22; font-weight: 600; }
+  .conferencia li .info-item { flex: 1; min-width: 0; }
+  @media (max-width: 560px) { .conferencia li { flex-wrap: wrap; } .conferencia li .info-item { flex: 1 1 calc(100% - 40px); } .conferencia li .passo-mini { margin-left: 30px; } }
+  .pronta .esq .fraco b { color: var(--verde); }
+  .periodo { margin-bottom: 8px; }
+  .periodo .chip { min-height: 34px; padding: 6px 12px; font-size: .8rem; }
+  .m-datas { margin-bottom: 10px; max-width: 420px; }
+  .m-datas[hidden] { display: none; }
+  .mais-box { text-align: center; margin-top: 14px; }
+  .mov-extra { display: block; font-size: .76rem; color: var(--tinta-fraca); font-weight: 500; margin-top: 2px; }
+  td mark { background: rgba(232,163,61,.3); color: inherit; border-radius: 3px; padding: 0 2px; }
+
+
+
+  /* ---- levantamento do estoque ---- */
+  .lev-sub { font: 400 .85rem 'Public Sans', sans-serif; color: var(--tinta-fraca); margin-left: 6px; }
+  .lev-h { font: 600 .95rem 'Public Sans', sans-serif; margin: 18px 0 6px; color: var(--verde); }
+  .lev-barra { height: 10px; border-radius: 6px; background: var(--borda); overflow: hidden; }
+  .lev-barra span { display: block; height: 100%; background: var(--verde-2); transition: width .4s; }
+  .lev-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .lev-est { border: 1px solid var(--borda); border-radius: var(--r-md); padding: 10px; background: var(--cartao-alto); display: grid; gap: 6px; }
+  .lev-est h3 { font: 600 .85rem 'Public Sans', sans-serif; color: var(--tinta-fraca); margin: 0 0 2px; }
+  .lev-cel { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-height: var(--touch-min); padding: 8px 10px; text-align: left; cursor: pointer;
+    border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--cartao); font: inherit; color: var(--tinta); }
+  .lev-cel b { font-size: .9rem; } .lev-cel span { font-size: .76rem; color: var(--tinta-fraca); } .lev-cel em { font-size: .72rem; color: var(--terracota); font-style: normal; font-weight: 600; }
+  .lev-cel:hover { border-color: var(--verde); }
+  .lev-cel.ok { background: #E3EFE7; border-color: #B9D6C4; } .lev-cel.ok span { color: var(--verde); font-weight: 600; }
+  .lev-dica { font-size: .84rem; color: var(--tinta-fraca); margin-top: 6px; }
+  .lev-dica select { width: auto; padding: 4px 8px; margin-left: 4px; }
+  .lev-acoes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; margin-top: 16px; }
+
+  /* ---- central de notificações: sino, cartões de aviso, retorno do ADM ---- */
+  .sino { position: relative; width: 40px; height: 40px; display: inline-grid; place-items: center; border-radius: 50%;
+    border: 1px solid var(--borda); background: var(--cartao); color: var(--verde); cursor: pointer; transition: border-color .15s, transform .12s; }
+  .sino svg { width: 20px; height: 20px; }
+  .sino:hover { border-color: var(--verde); }
+  .sino:active { transform: scale(.95); }
+  .sino.tem svg { animation: sino-balanca 2.4s ease-in-out 1; transform-origin: 50% 10%; }
+  .sino-n { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--terracota); color: #fff; font: 700 .68rem/18px 'Public Sans', sans-serif; text-align: center; }
+  .sino-n[hidden] { display: none; }
+  @keyframes sino-balanca { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(14deg); } 30% { transform: rotate(-12deg); } 45% { transform: rotate(8deg); } 60% { transform: rotate(-5deg); } }
+  .av-resumo { font: 400 .8rem 'Public Sans', sans-serif; color: var(--tinta-fraca); margin-left: 6px; }
+  .av-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .av { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--borda); border-left-width: 5px; border-radius: var(--r-md);
+    background: var(--cartao); cursor: pointer; transition: transform .15s var(--sai, ease), box-shadow .2s, background .2s; }
+  .av:hover { box-shadow: var(--sombra); transform: translateY(-1px); }
+  .av:focus-visible { outline: 2px solid var(--verde-2); outline-offset: 2px; }
+  .av.urg { border-left-color: var(--terracota); } .av.aten { border-left-color: var(--ambar); } .av.info { border-left-color: var(--verde-2); }
+  .av.feito { opacity: .6; }
+  .av-ponto { flex: none; width: 10px; height: 10px; border-radius: 50%; background: transparent; }
+  .av.novo .av-ponto { background: var(--terracota); box-shadow: 0 0 0 4px rgba(196, 93, 60, .18); }
+  .av-corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .av-tit { font-weight: 600; }
+  .av.novo .av-tit { color: var(--verde); }
+  .av-msg { font-size: .88rem; color: var(--tinta); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .av-meta { font-size: .76rem; color: var(--tinta-fraca); }
+  .av-seta { flex: none; font-size: 1.5rem; color: var(--tinta-fraca); line-height: 1; }
+  .av-mais { text-align: center; }
+  .av-mais:hover { box-shadow: none; transform: none; }
+  .ntf-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .av-texto { font-size: 1rem; line-height: 1.55; margin: 0 0 8px; }
+  .ret-det { margin-top: 8px; display: block; overflow-x: auto; }
+  .ret-det[hidden] { display: none; }
+  .ret-tab { width: 100%; font-size: .78rem; border-collapse: collapse; }
+  .ret-tab th, .ret-tab td { padding: 4px 8px 4px 0; text-align: left; border-bottom: 1px solid var(--borda); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .sino.tem svg { animation: none; } }
+  @media (max-width: 520px) { .quem { gap: 6px; } .quem .nome { max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .selo { padding-left: 8px; padding-right: 8px; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; }
+    .sk-barra, .sk-pilula { animation: none; }
+    .c-anel, .c-check { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="faixa-demo" hidden>Modo demonstração · dados de exemplo só neste aparelho · login <b>rogerio</b> (admin) ou <b>juraci</b> (voluntário) · senha <b>demo</b> · <button type="button" id="demo-reiniciar">reiniciar dados de exemplo</button></div>
+
+<header>
+  <div class="topo-inner">
+    <div class="marca">SIGA<em>·</em>NCC</div>
+    <div class="quem">
+      <span class="nome" id="nome-usuario"></span>
+      <span class="selo" id="selo-papel" hidden></span>
+      <button class="sino" id="btn-sino" type="button" aria-label="Notificações">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        <span class="sino-n" id="sino-n" hidden></span>
+      </button>
+      <button class="sair" id="btn-sair" type="button">Sair</button>
+    </div>
+  </div>
+</header>
+
+<nav aria-label="Seções do app" id="nav">
+  <span class="nav-ind" id="nav-ind" aria-hidden="true"></span>
+  <button class="ativa" data-aba="painel" type="button">Painel</button>
+  <button data-aba="receber" type="button">Receber doação</button>
+  <button data-aba="estoque" type="button">Estoque</button>
+  <button data-aba="cestas" type="button">Cestas</button>
+  <button data-aba="recebedores" type="button">Recebedores</button>
+  <button data-aba="escala" type="button">Escala</button>
+  <button data-aba="movimentos" type="button">Movimentos</button>
+  <button data-aba="admin" id="nav-admin" type="button" hidden>Admin</button>
+</nav>
+
+<main>
+  <!-- ============ PAINEL ============ -->
+  <section id="aba-painel">
+    <div id="painel-raiz"></div>
+
+    <div class="versiculo-rodape" id="versiculo"></div>
+  </section>
+
+
+  <!-- ============ RECEBER ============ -->
+  <section id="aba-receber" hidden>
+    <div class="painel-bloco">
+      <h2>Registrar recebimento de doação</h2>
+      <form id="form-receber">
+        <div>
+          <label>Produto <span style="text-transform:none;letter-spacing:0;font-weight:400">(toque num atalho ou escolha na lista)</span></label>
+          <div class="chips" id="r-chips" role="group" aria-label="Produtos da cesta"></div>
+          <label for="r-produto" class="sr-so">Produto</label>
+          <select id="r-produto" required>
+            <option value="">— escolha na lista —</option>
+          </select>
+          <div class="novo-produto" id="r-novo" hidden>
+            <div>
+              <label for="r-novo-nome">Nome do produto novo</label>
+              <input id="r-novo-nome" type="text" autocomplete="off" placeholder="Ex.: Fralda geriátrica">
+            </div>
+            <div>
+              <label for="r-novo-cat">Categoria</label>
+              <select id="r-novo-cat">
+                <option value="OUTRO">Outro</option>
+                <option value="GRAO">Grão / massa</option>
+                <option value="ENLATADO">Enlatado</option>
+                <option value="TEMPERO">Tempero</option>
+                <option value="BEBIDA">Bebida</option>
+                <option value="DOCE">Doce</option>
+              </select>
+            </div>
+            <p class="dica-campo">Fica no catálogo, fora da receita da cesta (o ADM pode incluir depois).</p>
+          </div>
+        </div>
+        <div class="duas">
+          <div>
+            <label for="r-qtd">Quantidade</label>
+            <div class="passo">
+              <button type="button" class="passo-btn" data-passo="-1" aria-label="Diminuir">−</button>
+              <input id="r-qtd" type="number" step="any" min="0.01" inputmode="decimal" required>
+              <button type="button" class="passo-btn" data-passo="1" aria-label="Aumentar">+</button>
+            </div>
+            <div class="atalhos">
+              <button type="button" class="atalho" data-soma="5">+5</button>
+              <button type="button" class="atalho" data-soma="10">+10</button>
+              <button type="button" class="atalho" data-soma="0">zerar</button>
+            </div>
+          </div>
+          <div>
+            <label for="r-unidade">Unidade</label>
+            <input id="r-unidade" type="text" readonly placeholder="vem do produto">
+          </div>
+        </div>
+        <div class="duas">
+          <div>
+            <label for="r-validade">Validade <span style="text-transform:none;letter-spacing:0;font-weight:400">(se tiver)</span></label>
+            <input id="r-validade" type="date">
+            <div class="dica-campo" id="r-validade-dica" aria-live="polite"></div>
+          </div>
+          <div>
+            <label for="r-local">Local na prateleira</label>
+            <select id="r-local">
+              <option value="">— não informar —</option>
+            </select>
+          </div>
+        </div>
+        <div class="duas">
+          <div>
+            <label for="r-lote">Nº do lote <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+            <input id="r-lote" type="text">
+          </div>
+          <div>
+            <label for="r-doador">Doador <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+            <input id="r-doador" type="text" placeholder="Nome de quem doou" list="r-doadores" autocomplete="off">
+            <datalist id="r-doadores"></datalist>
+          </div>
+        </div>
+        <div>
+          <label>Esta entrada foi</label>
+          <span class="chips" id="r-origem" role="group" aria-label="Origem da entrada">
+            <button type="button" class="chip" data-origem="DOACAO" aria-pressed="true">Doação</button>
+            <button type="button" class="chip" data-origem="COMPRA" aria-pressed="false">Compra da igreja</button>
+          </span>
+        </div>
+        <div class="erro" id="erro-receber" role="alert"></div>
+        <div><button class="btn" id="btn-receber" type="submit">Registrar entrada</button></div>
+      </form>
+    </div>
+
+    <div class="painel-bloco" id="r-recentes-bloco" hidden>
+      <h2>Registradas agora</h2>
+      <ul class="lista" id="r-recentes"></ul>
+    </div>
+  </section>
+
+  <!-- ============ ESTOQUE ============ -->
+  <section id="aba-estoque" hidden>
+    <div id="lev" hidden></div>
+    <div class="painel-bloco" id="mapa-bloco">
+      <div class="cabecalho-bloco">
+        <h2>Mapa do estoque</h2>
+        <span class="filtros">
+          <button class="btn-mini" id="btn-levantamento" type="button">Levantamento do estoque</button>
+          <button class="btn-mini" id="btn-atualizar-mapa" type="button">Atualizar</button>
+        </span>
+      </div>
+      <input class="busca" id="mapa-busca" type="search" placeholder="Buscar produto ou endereço (ex.: P2-B)" autocomplete="off" style="width:100%;margin-bottom:10px" aria-label="Buscar no mapa">
+      <div id="mapa-resultado"></div>
+      <nav id="mapa-trilha" aria-label="Onde você está no mapa"></nav>
+      <div id="mapa"></div>
+      <div id="mapa-detalhe" hidden></div>
+      <div class="legenda-mapa" id="mapa-legenda">
+        <span class="leg"><span class="pino ambar"></span> lote vencendo em 30 dias</span>
+        <span class="leg"><span class="pino riso"></span> lote vencido</span>
+      </div>
+    </div>
+
+    <details class="lista-lotes painel-bloco">
+      <summary>Ver todos os lotes em lista</summary>
+      <div class="cabecalho-bloco">
+        <h2>Lotes em estoque</h2>
+        <span class="filtros">
+          <input class="busca" id="e-busca" type="search" placeholder="Buscar produto, local, doador…" autocomplete="off" aria-label="Buscar lotes">
+          <label for="e-situacao">Situação</label>
+          <select id="e-situacao">
+            <option value="ATIVO">Ativos</option>
+            <option value="">Todos</option>
+            <option value="CONSUMIDO">Consumidos</option>
+            <option value="VENCIDO">Vencidos</option>
+            <option value="DESCARTADO">Descartados</option>
+          </select>
+          <button class="btn-mini" id="btn-atualizar-estoque" type="button">Atualizar</button>
+        </span>
+      </div>
+      <p class="resumo" id="e-resumo"></p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Produto</th><th>Qtd</th><th>Validade</th><th>Local</th><th>Doador</th><th>Entrada</th></tr></thead>
+          <tbody id="corpo-estoque"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ CESTAS ============ -->
+  <section id="aba-cestas" hidden>
+    <div class="chips sub-abas" id="cestas-sub" role="group" aria-label="Partes da aba Cestas">
+      <button type="button" class="chip" data-sub="montar" aria-pressed="true">Montar / entregar</button>
+      <button type="button" class="chip" data-sub="prontas" aria-pressed="false">Prontas no estoque <small id="cestas-prontas-n"></small></button>
+      <button type="button" class="chip" data-sub="receita" aria-pressed="false">Receita</button>
+      <button type="button" class="chip" data-sub="historico" aria-pressed="false">Histórico</button>
+    </div>
+
+    <div class="painel-bloco" data-sub="montar">
+      <h2>Montar cesta ou entregar itens</h2>
+      <form id="form-cesta">
+        <div class="seletor">
+          <span class="rotulo-lista">O que vai sair</span>
+          <div class="chips" role="radiogroup" aria-label="Tipo de saída">
+            <label class="chip opcao"><input type="radio" name="c-modo" value="CESTA" checked> Cesta completa</label>
+            <label class="chip opcao"><input type="radio" name="c-modo" value="AVULSO"> Itens avulsos</label>
+          </div>
+          <p class="dica-campo" id="c-modo-dica"></p>
+        </div>
+        <div class="seletor" id="c-destino-box">
+          <span class="rotulo-lista">Destino</span>
+          <div class="chips" role="radiogroup" aria-label="Destino da cesta">
+            <label class="chip opcao"><input type="radio" name="c-destino" value="ENTREGUE" checked> Entregar agora</label>
+            <label class="chip opcao"><input type="radio" name="c-destino" value="EMBALADA"> Guardar embalada</label>
+          </div>
+        </div>
+
+        <div>
+          <span class="rotulo-lista">Itens <span id="c-personalizada" class="fraco"></span>
+            <button type="button" class="btn-mini" id="c-voltar-receita" hidden>Voltar à receita</button></span>
+          <ul class="conferencia" id="cesta-conferencia"></ul>
+          <div class="add-item">
+            <select id="c-add-produto" aria-label="Adicionar item"></select>
+            <button type="button" class="btn-mini" id="c-add-btn">＋ Adicionar item</button>
+          </div>
+        </div>
+        <div class="bloqueio" id="cesta-bloqueio" hidden></div>
+
+        <div id="c-dest-box">
+          <label for="c-destinatario">Quem recebe</label>
+          <div style="display:flex;gap:8px">
+            <input id="c-destinatario" type="text" list="c-destinatarios" autocomplete="off" placeholder="Família ou pessoa" style="flex:1">
+            <button type="button" class="btn-mini" id="c-btn-rec">Cadastro</button>
+          </div>
+          <datalist id="c-destinatarios"></datalist>
+          <p class="dica-campo" id="c-rec-dica" aria-live="polite"></p>
+        </div>
+        <div id="c-local-box" hidden>
+          <label for="c-local">Onde a cesta fica guardada</label>
+          <select id="c-local"><option value="">— não informar —</option></select>
+        </div>
+        <div>
+          <label for="c-observacao">Observação <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+          <input id="c-observacao" type="text">
+        </div>
+        <div class="erro" id="erro-cesta" role="alert"></div>
+        <div class="acoes-cesta">
+          <button class="btn" id="btn-montar-cesta" type="submit">Montar cesta e dar baixa</button>
+          <button class="btn-mini" id="btn-cancelar-cesta" type="button" hidden>Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="painel-bloco" data-sub="prontas" hidden>
+      <div class="cabecalho-bloco">
+        <h2>Cestas prontas no estoque</h2>
+        <button class="btn-mini" id="btn-atualizar-prontas" type="button">Atualizar</button>
+      </div>
+      <ul class="lista" id="cestas-prontas"></ul>
+    </div>
+
+    <div class="painel-bloco" data-sub="receita" hidden>
+      <div class="cabecalho-bloco">
+        <h2>Receita da cesta padrão</h2>
+        <button class="btn-mini" id="btn-cesta-editar" type="button" hidden>Editar receita</button>
+      </div>
+      <p id="cesta-resumo" style="margin-bottom:10px"></p>
+      <ul class="lista" id="cesta-itens" aria-busy="true"></ul>
+      <div id="cesta-edicao" hidden>
+        <form id="form-cesta-add">
+          <div class="duas">
+            <div><label for="ce-produto">Produto a incluir</label><select id="ce-produto"></select></div>
+            <div><label for="ce-qtd">Quantidade</label><input id="ce-qtd" type="number" step="any" min="0.01" inputmode="decimal"></div>
+          </div>
+          <div class="duas">
+            <div><label for="ce-unidade">Unidade</label><input id="ce-unidade" type="text"></div>
+            <div style="align-self:end"><button class="btn" type="submit">Incluir na receita</button></div>
+          </div>
+          <div class="erro" id="erro-cesta-edicao" role="alert"></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="painel-bloco" data-sub="historico" hidden>
+      <div class="cabecalho-bloco">
+        <h2>Últimas cestas montadas</h2>
+        <button class="btn-mini" id="btn-atualizar-cestas" type="button">Atualizar</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Quando</th><th>Destinatário</th><th>Itens</th><th>Por</th></tr></thead>
+          <tbody id="cesta-recentes"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECEBEDORES ============ -->
+  <section id="aba-recebedores" hidden>
+    <div class="painel-bloco">
+      <div class="cabecalho-bloco">
+        <h2>Quem recebe a cesta</h2>
+        <div class="filtros">
+          <input type="search" id="rec-busca" class="busca" placeholder="Buscar pelo nome, telefone, endereço" aria-label="Buscar recebedor">
+          <button class="btn-mini" id="btn-atualizar-rec" type="button">Atualizar</button>
+          <button class="btn" id="btn-novo-rec" type="button">Novo recebedor</button>
+        </div>
+      </div>
+      <div class="chips" id="rec-chips" role="group" aria-label="Filtrar recebedores">
+        <button type="button" class="chip" data-f="todos" aria-pressed="true">Todos</button>
+        <button type="button" class="chip" data-f="mes" aria-pressed="false">Já receberam este mês</button>
+        <button type="button" class="chip" data-f="nao" aria-pressed="false">Ainda não receberam</button>
+        <button type="button" class="chip" data-f="inativos" aria-pressed="false" id="rec-chip-inativos" hidden>Inativos</button>
+      </div>
+      <p class="resumo" id="rec-resumo" aria-live="polite"></p>
+      <ul class="lista" id="rec-lista"></ul>
+    </div>
+  </section>
+
+  <!-- ============ ESCALA DE VOLUNTÁRIOS ============ -->
+  <section id="aba-escala" hidden>
+    <div class="painel-bloco">
+      <div class="cabecalho-bloco">
+        <h2>Escala de voluntários</h2>
+        <div class="filtros">
+          <button class="btn-mini" id="btn-atualizar-escala" type="button">Atualizar</button>
+          <button class="btn" id="btn-nova-conv" type="button" hidden>Nova convocação</button>
+        </div>
+      </div>
+      <p class="resumo" id="esc-resumo" aria-live="polite"></p>
+      <div id="esc-lista"></div>
+    </div>
+  </section>
+
+  <!-- ============ MOVIMENTOS ============ -->
+  <section id="aba-movimentos" hidden>
+    <div class="painel-bloco">
+      <div class="cabecalho-bloco">
+        <h2>Histórico de movimentos</h2>
+        <div class="filtros">
+          <input type="search" id="m-busca" class="busca" placeholder="Buscar produto, quem, observação" aria-label="Buscar nos movimentos">
+          <button class="btn-mini" id="btn-atualizar-mov" type="button">Atualizar</button>
+        </div>
+      </div>
+      <div class="chips periodo" id="m-periodo" role="group" aria-label="Período">
+        <button type="button" class="chip" data-per="hoje" aria-pressed="false">Hoje</button>
+        <button type="button" class="chip" data-per="7" aria-pressed="false">7 dias</button>
+        <button type="button" class="chip" data-per="30" aria-pressed="true">30 dias</button>
+        <button type="button" class="chip" data-per="mes" aria-pressed="false">Este mês</button>
+        <button type="button" class="chip" data-per="tudo" aria-pressed="false">Tudo</button>
+        <button type="button" class="chip" data-per="datas" aria-pressed="false">Escolher datas</button>
+      </div>
+      <div class="duas m-datas" id="m-datas" hidden>
+        <div><label for="m-de">De</label><input type="date" id="m-de"></div>
+        <div><label for="m-ate">Até</label><input type="date" id="m-ate"></div>
+      </div>
+      <div class="chips" id="m-chips" role="group" aria-label="Filtrar por tipo"></div>
+      <p class="resumo" id="m-resumo" aria-live="polite"></p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Quando</th><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Por</th><th>Observação</th></tr></thead>
+          <tbody id="corpo-movimentos"></tbody>
+        </table>
+      </div>
+      <div class="mais-box"><button class="btn-mini" id="m-mais" type="button" hidden>Mostrar mais</button></div>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN ============ -->
+  <section id="aba-admin" hidden>
+    <div class="painel-bloco" style="margin-bottom:18px">
+      <div class="cabecalho-bloco">
+        <h2>Administração</h2>
+        <button class="btn-mini" id="btn-atualizar-admin" type="button">Atualizar tudo</button>
+      </div>
+      <p style="font-size:.86rem;color:var(--tinta-fraca)">Solicitações de acesso, usuários, catálogo de produtos, configuração e diagnóstico.</p>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Solicitações de acesso</h3>
+      <div class="painel-bloco">
+        <div class="filtros" style="margin-bottom:12px">
+          <label for="adm-sol-status" style="margin:0">Status</label>
+          <select id="adm-sol-status">
+            <option value="PENDENTE" selected>Pendentes</option>
+            <option value="">Todas</option>
+            <option value="APROVADA">Aprovadas</option>
+            <option value="RECUSADA">Recusadas</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Nome</th><th>Contato</th><th>Pedido</th><th>Login sugerido</th><th>Ações</th></tr></thead>
+            <tbody id="corpo-solicitacoes"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Usuários</h3>
+      <div class="painel-bloco">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Login</th><th>Contato</th><th>Papel</th><th>Status</th><th>Último acesso</th><th>Ações</th></tr></thead>
+            <tbody id="corpo-usuarios"><tr><td colspan="6" class="vazio">Carregando…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="separador"></div>
+        <h3>Criar usuário</h3>
+        <form id="form-usuario">
+          <div class="duas">
+            <div>
+              <label for="u-nome">Nome completo</label>
+              <input id="u-nome" type="text" required placeholder="Nome e sobrenome">
+            </div>
+            <div>
+              <label for="u-login">Login <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+              <input id="u-login" type="text" placeholder="gerado do 1º nome se vazio">
+            </div>
+          </div>
+          <div class="duas">
+            <div>
+              <label for="u-papel">Papel</label>
+              <select id="u-papel">
+                <option value="VOLUNTARIO" selected>Voluntário</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+            <div>
+              <label for="u-senha">Senha temporária <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></label>
+              <input id="u-senha" type="text" placeholder="gerada automaticamente se vazio">
+            </div>
+          </div>
+          <div class="erro" id="erro-usuario" role="alert"></div>
+          <div><button class="btn" type="submit">Criar usuário</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Catálogo de produtos</h3>
+      <div class="painel-bloco">
+        <p class="imp-nota" style="margin-bottom:10px">Preços <b>automáticos</b>: valor de mercado de Rio de Janeiro corrigido pela inflação de cada produto (IBGE), sozinho a cada 3 meses. Se você digitar um preço, ele vira a nova base (marca “ADM”).
+          <button class="btn-mini" id="btn-precos" type="button">Atualizar preços agora</button></p>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>ID</th><th>Nome</th><th>Unid.</th><th>Qtd cesta</th><th>Un. cesta</th><th>Preço R$ (estimado)</th><th>Alerta dias</th><th>Ações</th></tr></thead>
+            <tbody id="corpo-produtos"><tr><td colspan="8" class="vazio">Carregando…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="separador"></div>
+        <h3>Novo produto</h3>
+        <form id="form-produto">
+          <div class="duas">
+            <div>
+              <label for="p-nome">Nome</label>
+              <input id="p-nome" type="text" required>
+            </div>
+            <div>
+              <label for="p-categoria">Categoria</label>
+              <select id="p-categoria">
+                <option>GRAO</option><option>ENLATADO</option><option selected>TEMPERO</option>
+                <option>BEBIDA</option><option>DOCE</option><option>OUTRO</option>
+              </select>
+            </div>
+          </div>
+          <div class="duas">
+            <div>
+              <label for="p-unidade">Unidade</label>
+              <input id="p-unidade" type="text" placeholder="kg, un, lata…" value="un">
+            </div>
+            <div>
+              <label for="p-qtd">Qtd padrão na cesta</label>
+              <input id="p-qtd" type="number" step="any" min="0" inputmode="decimal">
+            </div>
+          </div>
+          <div class="duas">
+            <div>
+              <label for="p-unidade-cesta">Unidade na cesta</label>
+              <input id="p-unidade-cesta" type="text" placeholder="kg, un…">
+            </div>
+            <div>
+              <label for="p-preco">Preço estimado (R$)</label>
+              <input id="p-preco" type="number" step="0.01" min="0" inputmode="decimal">
+            </div>
+          </div>
+          <div>
+            <label for="p-validade">Alertar quantos dias antes de vencer</label>
+            <input id="p-validade" type="number" min="1" value="30">
+          </div>
+          <div class="erro" id="erro-produto" role="alert"></div>
+          <div><button class="btn" type="submit">Criar produto</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Configuração do sistema</h3>
+      <div class="painel-bloco">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Chave</th><th>Valor</th><th></th></tr></thead>
+            <tbody id="corpo-config"><tr><td colspan="3" class="vazio">Carregando…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="separador"></div>
+        <form id="form-config">
+          <div class="duas">
+            <div>
+              <label for="cfg-chave">Chave</label>
+              <input id="cfg-chave" type="text" required placeholder="ex.: dias_alerta_limpeza">
+            </div>
+            <div>
+              <label for="cfg-valor">Valor</label>
+              <input id="cfg-valor" type="text" required>
+            </div>
+          </div>
+          <div><button class="btn" type="submit">Salvar configuração</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Alertas automáticos</h3>
+      <div class="painel-bloco">
+        <p style="font-size:.86rem;color:var(--tinta-fraca);margin-bottom:12px">
+          Gera alertas de validade, estoque baixo e limpeza conforme a configuração. O gatilho diário roda sozinho às 07h.
+        </p>
+        <button class="btn-mini" id="btn-gerar-alertas" type="button">Gerar alertas agora</button>
+        <button class="btn-mini" id="btn-instalar-gatilho" type="button">Instalar alerta diário (07h)</button>
+      </div>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Diagnóstico</h3>
+      <div class="painel-bloco">
+        <button class="btn-mini" id="btn-saude" type="button">Verificar planilha</button>
+        <pre class="saude" id="adm-saude">Clique em “Verificar planilha”.</pre>
+      </div>
+    </div>
+
+    <div class="admin-bloco">
+      <h3>Trilha de auditoria <span style="font:400 .8rem 'Public Sans';color:var(--tinta-fraca)">(50 últimos)</span></h3>
+      <div class="painel-bloco">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Quando</th><th>Quem</th><th>Ação</th></tr></thead>
+            <tbody id="corpo-logs"><tr><td colspan="3" class="vazio">Carregando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ======= modal: troca de senha (guarda) ======= -->
+<div class="modal" id="modal-troca" hidden>
+  <div class="modal-cartao">
+    <h2>Defina sua senha</h2>
+    <p class="sub">Você está usando uma senha temporária. Crie uma nova para continuar.</p>
+    <form id="form-troca">
+      <div>
+        <label for="t-atual">Senha temporária</label>
+        <input id="t-atual" type="password" required autocomplete="current-password">
+      </div>
+      <div>
+        <label for="t-nova">Nova senha (mínimo 8)</label>
+        <input id="t-nova" type="password" required minlength="8" autocomplete="new-password">
+      </div>
+      <div>
+        <label for="t-repetir">Repita a nova senha</label>
+        <input id="t-repetir" type="password" required minlength="8" autocomplete="new-password">
+      </div>
+      <div class="erro" id="erro-troca" role="alert"></div>
+      <button class="btn" id="btn-troca" type="submit">Salvar</button>
+    </form>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { exigirLogin, sair, sessaoLocal, trocarSenha, chamarAutenticado, sentinelaDeConta, modoDemo } from './auth.js';
+import { fmtData, fmtNum, esc, hoje as hojeLocal } from './ui.js';
+import { contar, cascata, esqueleto, vazioComVerso, girarVersiculo, celebrar } from './fx.js';
+import { iniciarCestas, atualizarCestas } from './cestas.js';
+import { iniciarMovimentos, atualizarMovimentos } from './movimentos.js';
+import { iniciarAdmin, atualizarAdmin } from './admin.js';
+import { iniciarRecebedores, atualizarRecebedores } from './recebedores.js';
+import { iniciarEscala, atualizarEscala } from './escala.js';
+import { iniciarNotificacoes, atualizarNotificacoes } from './notificacoes.js';
+import { iniciarPainel } from './painel-motor.js';
+import { blocosReais } from './impacto.js';
+import { iniciarEstoqueMapa, atualizarEstoqueMapa } from './estoque-mapa.js';
+import { iniciarLevantamento } from './levantamento.js';
+
+sentinelaDeConta();
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+let usuario = null;
+let painel = null;   // motor do painel (aba Início)
+let resumo = null;   // último resumo do painel ("como estamos")
+let produtos = [];
+let idsCesta = [];   // produtos da receita: viram atalhos (chips) no Receber
+let lotes = [];      // última lista do estoque (a busca filtra no aparelho)
+let toastTimer;      // antes do boot: o toast pode ser chamado já na 1ª carga
+
+if (modoDemo()) {
+  $('#faixa-demo').hidden = false;
+  $('#demo-reiniciar')?.addEventListener('click', () => {
+    try { localStorage.removeItem('siga:demo'); } catch (e) {}
+    location.reload();
+  });
+}
+
+// ---------- boot ----------
+usuario = await exigirLogin();
+if (usuario) {
+  usuario.admin = usuario.admin === true || String(usuario.papel || '').toUpperCase() === 'ADMIN';
+  $('#nome-usuario').textContent = usuario.nome || usuario.login;
+  const selo = $('#selo-papel');
+  selo.hidden = false;
+  selo.textContent = (usuario.papel || '').toUpperCase();
+  selo.classList.toggle('vol', (usuario.papel || '').toUpperCase() !== 'ADMIN');
+  if (usuario.deve_trocar_senha) $('#modal-troca').hidden = false;
+  girarVersiculo($('#versiculo'));
+
+  painel = iniciarPainel({ painel: 'ncc', raiz: 'painel-raiz', aoCarregar: montarResumo });
+
+  const ctx = {
+    usuario,
+    chamar: chamarAutenticado,
+    toast,
+    celebrar,
+    recarregarPainel,
+    aposMudarEstoque: () => { carregarEstoque().catch(() => {}); recarregarPainel().catch(() => {}); }
+  };
+  iniciarNotificacoes(ctx);
+  iniciarEstoqueMapa(ctx);
+  iniciarLevantamento(ctx);
+  iniciarRecebedores(ctx);
+  iniciarEscala(ctx);
+  iniciarCestas(ctx);
+  iniciarMovimentos(ctx);
+  if (usuario.admin) {
+    $('#nav-admin').hidden = false;
+    $('#rec-chip-inativos').hidden = false;
+    iniciarAdmin(ctx);
+  }
+  painel.comecar(usuario);
+  await carregarTudo();
+}
+requestAnimationFrame(() => {
+  moverIndicador($('nav button.ativa'), false);
+  const kpis = $('.kpis');
+  if (kpis) {
+    kpis.classList.add('entra');
+    $$('.kpis .kpi').forEach((k, i) => k.style.setProperty('--i', i));
+  }
+  $$('#aba-painel .painel-bloco').forEach((b, i) => b.style.setProperty('--i', i + 3));
+  $('#aba-painel').classList.add('aba-entra');
+});
+
+// ---------- abas ----------
+const REFRESH = {
+  painel: () => (painel ? painel.atualizar() : Promise.resolve()),
+  estoque: () => atualizarEstoqueMapa(),
+  cestas: () => atualizarCestas(),
+  movimentos: () => atualizarMovimentos(),
+  recebedores: () => atualizarRecebedores(),
+  escala: () => atualizarEscala(),
+  admin: () => atualizarAdmin()
+};
+function moverIndicador(btn, animar = true) {
+  const ind = $('#nav-ind');
+  if (!btn) return;
+  if (!animar) ind.style.transition = 'none';
+  ind.style.width = btn.offsetWidth + 'px';
+  ind.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
+  if (!animar) { void ind.offsetWidth; ind.style.transition = ''; }
+}
+window.addEventListener('resize', () => moverIndicador($('nav button.ativa'), false));
+
+$$('nav button[data-aba]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (btn.classList.contains('ativa')) return;
+    $$('nav button').forEach(b => { b.classList.remove('ativa'); b.removeAttribute('aria-current'); });
+    btn.classList.add('ativa');
+    btn.setAttribute('aria-current', 'page');
+    moverIndicador(btn);
+    btn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    $$('main section').forEach(s => { s.hidden = true; s.classList.remove('aba-entra'); });
+    const alvo = $('#aba-' + btn.dataset.aba);
+    alvo.hidden = false;
+    alvo.querySelectorAll('.painel-bloco, .admin-bloco').forEach((b, i) => b.style.setProperty('--i', i));
+    void alvo.offsetWidth;
+    alvo.classList.add('aba-entra');
+    const fn = REFRESH[btn.dataset.aba];
+    if (fn) { try { await fn(); } catch (e) { toast(e.message, 'erro'); } }
+  });
+});
+
+// ---------- util ----------
+function toast(msg, tipo) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = (tipo || '') + ' visivel';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('visivel'), tipo === 'erro' ? 6000 : 4000);
+}
+
+// ---------- painel ----------
+// O motor SVG do SIGMA v2 (painel-motor.js) desenha os KPIs e os gráficos da aba
+// Início. Aqui montamos os blocos próprios do SIGA: "como estamos", o que falta
+// para a próxima cesta e uma previsão simples pelo ritmo dos últimos meses.
+
+function tileResumo(el, n, rot, ruim) {
+  const d = el('div', ruim ? 'ruim' : '');
+  d.append(el('b', null, n), el('span', null, rot));
+  return d;
+}
+
+function montarResumo(r, ctx) {
+  resumo = r.resumo || null;
+  if (!resumo) return;
+  const el = ctx.el, num = ctx.num;
+  const sec = el('section', 'pn-sec');
+  sec.appendChild(el('h2', null, 'Como estamos agora'));
+  const tiles = el('div', 'pn-tiles');
+  tiles.append(
+    tileResumo(el, num(resumo.cestas_possiveis), 'cestas dão para montar hoje'),
+    tileResumo(el, num(resumo.estoque.kg), 'kg de alimento em estoque'),
+    tileResumo(el, 'R$ ' + num(Math.round(resumo.estoque.valor_estimado)), 'valor estimado em estoque'),
+    tileResumo(el, num(resumo.estoque.lotes), 'lotes ativos'),
+    tileResumo(el, num(resumo.validade.vencendo_30d), 'vencendo em 30 dias'),
+    tileResumo(el, num(resumo.alertas_pendentes), 'alertas pendentes', resumo.alertas_pendentes > 0)
+  );
+  sec.appendChild(tiles);
+  blocosReais(resumo.impacto, el).forEach(x => sec.appendChild(x));
+
+  const faltas = resumo.faltas_proxima || [];
+  sec.appendChild(el('h3', null, 'Para completar a próxima cesta'));
+  sec.appendChild(el('p', 'nota', faltas.length
+    ? 'Faltam: ' + faltas.slice(0, 10).map(f => `${f.nome} (${num(f.falta)} ${f.unidade})`).join(' · ')
+    : 'Estoque suficiente para montar a próxima cesta completa. 👍'));
+
+  const iv = (resumo.validade && resumo.validade.itens_vencendo) || [];
+  if (iv.length) {
+    sec.appendChild(el('h3', null, 'Vencendo em 30 dias'));
+    sec.appendChild(el('p', 'nota', iv.map(x => `${x.produto} ${num(x.qtd)} ${x.unidade} (${fmtData(x.validade)})`).join(' · ')));
+  }
+
+  // Previsão simples: ritmo médio de doações dos últimos meses com registro.
+  const iTipo = r.campos.indexOf('tipo'), iD = r.campos.indexOf('d');
+  const porMes = new Map();
+  r.linhas.forEach(l => {
+    if (String(r.dic.tipo[l[iTipo]] || '').toUpperCase() !== 'ENTRADA') return;
+    const d = r.dic.d[l[iD]] || '';
+    if (d) { const m = d.slice(0, 7); porMes.set(m, (porMes.get(m) || 0) + 1); }
+  });
+  const meses = [...porMes.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(-6);
+  if (meses.length >= 2) {
+    const media = meses.reduce((s, x) => s + x[1], 0) / meses.length;
+    sec.appendChild(el('h3', null, 'Previsão'));
+    sec.appendChild(el('p', 'nota',
+      `Nos últimos ${meses.length} meses com registro entraram, em média, ${num(Math.round(media * 10) / 10)} doações por mês. ` +
+      `Mantendo o ritmo, o próximo mês deve receber cerca de ${num(Math.round(media))} doações.`));
+  }
+
+  ctx.extras.appendChild(sec);
+}
+
+// Recarrega tudo o que depende de um lançamento: painel, alertas, estoque e atalhos.
+async function recarregarPainel() {
+  await Promise.all([
+    painel ? painel.atualizar() : Promise.resolve(),
+    carregarAlertas().catch(e => toast(e.message, 'erro')),
+    carregarProdutos().catch(e => toast(e.message, 'erro')),
+    carregarEstoque().catch(e => toast(e.message, 'erro')),
+    carregarSaldoChips().catch(e => toast(e.message, 'erro'))
+  ]);
+  if (produtos.length) renderChips();
+}
+
+async function carregarSaldoChips() {
+  const r = await chamarAutenticado({ action: 'cesta_listar' });
+  if (!r.ok) return;
+  idsCesta = (r.itens || []).filter(i => i.ativo !== false).map(i => i.produto_id);
+  if (produtos.length) renderChips();
+}
+
+async function carregarAlertas() {
+  await atualizarNotificacoes();
+}
+
+// ---------- estoque / produtos ----------
+
+async function carregarProdutos() {
+  const r = await chamarAutenticado({ action: 'produtos_listar' });
+  if (!r.ok) throw new Error(r.error);
+  produtos = r.produtos;
+  const sel = $('#r-produto');
+  sel.innerHTML = '<option value="">— escolha na lista —</option>' +
+    produtos.filter(p => p.ativo !== false).map(p => `<option value="${esc(p.id_produto)}">${esc(p.nome)}</option>`).join('') +
+    '<option value="__novo__">＋ Outro produto (não está na lista)</option>';
+
+  const locais = [];
+  for (let i = 1; i <= 6; i++) for (const n of ['A', 'B', 'C']) locais.push(`P${i}-${n}`);
+  for (let i = 1; i <= 6; i++) locais.push(`T${i}`);
+  $('#r-local').innerHTML = '<option value="">— não informar —</option>' +
+    locais.map(l => `<option value="${l}">${l}</option>`).join('');
+  renderChips();
+}
+
+function renderChips() {
+  const box = $('#r-chips');
+  const base = idsCesta.length ? idsCesta : produtos.slice(0, 8).map(p => p.id_produto);
+  const lista = base.map(id => produtos.find(p => p.id_produto === id)).filter(p => p && p.ativo !== false);
+  box.innerHTML = lista.map(p =>
+    `<button type="button" class="chip" data-id="${esc(p.id_produto)}" aria-pressed="false">${esc(p.nome)}</button>`).join('') +
+    '<button type="button" class="chip chip-novo" data-id="__novo__" aria-pressed="false">＋ Outro produto</button>';
+  marcarChip();
+}
+
+function marcarChip() {
+  const id = $('#r-produto').value;
+  $$('#r-chips .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === id)));
+}
+
+$('#r-chips').addEventListener('click', (e) => {
+  const c = e.target.closest('.chip');
+  if (!c) return;
+  $('#r-produto').value = c.dataset.id;
+  $('#r-produto').dispatchEvent(new Event('change'));
+  $('#r-qtd').focus({ preventScroll: true });
+});
+
+$('#r-produto').addEventListener('change', () => {
+  const novo = $('#r-produto').value === '__novo__';
+  const p = produtos.find(x => x.id_produto === $('#r-produto').value);
+  $('#r-novo').hidden = !novo;
+  $('#r-novo-nome').required = novo;
+  // produto novo: a unidade é digitada; produto do catálogo: vem do cadastro
+  $('#r-unidade').readOnly = !novo;
+  $('#r-unidade').required = novo;
+  $('#r-unidade').value = p ? p.unidade : '';
+  if (novo) setTimeout(() => $('#r-novo-nome').focus({ preventScroll: false }), 0);
+  marcarChip();
+});
+
+// quantidade: −/+ e atalhos
+function somarQtd(delta, zerar) {
+  const inp = $('#r-qtd');
+  const atual = Number(inp.value) || 0;
+  const novo = zerar ? '' : Math.max(0, Math.round((atual + delta) * 100) / 100);
+  inp.value = novo === 0 ? '' : novo;
+  inp.classList.remove('pulso'); void inp.offsetWidth; inp.classList.add('pulso');
+}
+$$('.passo-btn').forEach(b => b.addEventListener('click', () => somarQtd(Number(b.dataset.passo))));
+$$('.atalho').forEach(b => b.addEventListener('click', () => {
+  const n = Number(b.dataset.soma);
+  somarQtd(n, n === 0);
+}));
+
+// validade: resposta na hora
+function avisarValidade() {
+  const v = $('#r-validade').value;
+  const dica = $('#r-validade-dica');
+  dica.className = 'dica-campo';
+  if (!v) { dica.textContent = ''; return; }
+  const dias = Math.round((new Date(v + 'T12:00:00') - new Date(new Date().toDateString() + ' 12:00')) / 86400000);
+  if (dias < 0) { dica.classList.add('riso'); dica.textContent = 'Já venceu há ' + (-dias) + ' dia(s) — confira antes de guardar'; }
+  else if (dias === 0) { dica.classList.add('riso'); dica.textContent = 'Vence hoje — use primeiro'; }
+  else if (dias <= 30) { dica.classList.add('ambar'); dica.textContent = 'Vence em ' + dias + ' dia(s) — vai para a frente da prateleira'; }
+  else { dica.classList.add('ok'); dica.textContent = 'Validade boa: ' + (dias >= 60 ? Math.floor(dias / 30) + ' meses' : dias + ' dias'); }
+}
+$('#r-validade').addEventListener('input', avisarValidade);
+$('#r-validade').addEventListener('change', avisarValidade);
+
+// doadores: lembra os últimos neste aparelho + os que aparecem no estoque
+function doadoresSalvos() {
+  try { return JSON.parse(localStorage.getItem('siga:doadores')) || []; } catch (e) { return []; }
+}
+function lembrarDoador(nome) {
+  if (!nome) return;
+  const lista = [nome, ...doadoresSalvos().filter(d => d.toLowerCase() !== nome.toLowerCase())].slice(0, 25);
+  try { localStorage.setItem('siga:doadores', JSON.stringify(lista)); } catch (e) {}
+  preencherDoadores();
+}
+function preencherDoadores() {
+  const todos = [...new Set([...doadoresSalvos(), ...lotes.map(l => l.doador).filter(Boolean)])];
+  $('#r-doadores').innerHTML = todos.map(d => `<option value="${esc(d)}"></option>`).join('');
+}
+
+async function carregarEstoque() {
+  const corpo = $('#corpo-estoque');
+  if (!lotes.length) {
+    corpo.innerHTML = '<tr><td colspan="6"><span class="sk-barra" style="display:block;max-width:none"></span></td></tr>'.repeat(3);
+  }
+  // situacao '' = todas (o backend só usa ATIVO quando o campo nem vem)
+  const r = await chamarAutenticado({ action: 'estoque_listar', situacao: $('#e-situacao').value });
+  if (!r.ok) { corpo.innerHTML = `<tr><td colspan="6" class="vazio">${esc(r.error)}</td></tr>`; return; }
+  lotes = r.lotes || [];
+  preencherDoadores();
+  renderEstoque(true);
+}
+
+function marcar(txt, termo) {
+  const bruto = String(txt);
+  const i = termo ? bruto.toLowerCase().indexOf(termo) : -1;
+  if (i < 0) return esc(bruto);
+  return esc(bruto.slice(0, i)) + '<mark>' + esc(bruto.slice(i, i + termo.length)) + '</mark>' + esc(bruto.slice(i + termo.length));
+}
+
+function renderEstoque(animar) {
+  const corpo = $('#corpo-estoque');
+  const termo = $('#e-busca').value.trim().toLowerCase();
+  const lista = termo
+    ? lotes.filter(l => [l.produto, l.local, l.doador, l.lote, l.id_lote].some(v => String(v || '').toLowerCase().includes(termo)))
+    : lotes;
+  // datas locais (toISOString é UTC: depois das 21h no Brasil já seria "amanhã")
+  const hoje = hojeLocal();
+  const d30 = new Date(); d30.setDate(d30.getDate() + 30);
+  const em30 = d30.getFullYear() + '-' + String(d30.getMonth() + 1).padStart(2, '0') + '-' + String(d30.getDate()).padStart(2, '0');
+  const vencidos = lista.filter(l => l.validade && l.validade < hoje).length;
+  const vencendo = lista.filter(l => l.validade && l.validade >= hoje && l.validade <= em30).length;
+  $('#e-resumo').innerHTML = lista.length
+    ? `<b>${lista.length}</b> lote(s)` + (termo ? ` para “${esc(termo)}”` : '') +
+      (vencendo ? ` · <b>${vencendo}</b> vencendo em 30 dias` : '') + (vencidos ? ` · <b>${vencidos}</b> vencido(s)` : '')
+    : '';
+  if (!lista.length) {
+    corpo.innerHTML = `<tr><td colspan="6" class="vazio">${termo ? 'Nada encontrado para “' + esc(termo) + '”.' : 'Nenhum lote nesta situação.'}</td></tr>`;
+    return;
+  }
+  corpo.innerHTML = lista.map(l => {
+    let val = '—';
+    if (l.validade) {
+      const cls = l.validade < hoje ? 'riso' : (l.validade <= em30 ? 'ambar' : '');
+      val = cls ? `<span class="badge ${cls}">${l.validade < hoje ? 'venceu ' : ''}${fmtData(l.validade)}</span>` : fmtData(l.validade);
+    }
+    return `<tr>
+      <td data-c="produto"><strong>${marcar(l.produto, termo)}</strong><br><span style="font-size:.78rem;color:var(--tinta-fraca)">${esc(l.id_lote)}${l.lote ? ' · lote ' + marcar(l.lote, termo) : ''}</span></td>
+      <td data-c="qtd">${fmtNum(l.qtd)} ${esc(l.unidade)}</td>
+      <td data-c="info" data-l="Validade">${val}</td>
+      <td data-c="info" data-l="Local">${l.local ? marcar(l.local, termo) : '—'}</td>
+      <td data-c="info" data-l="Doador">${l.doador ? marcar(l.doador, termo) : '—'}</td>
+      <td data-c="info" data-l="Entrada">${fmtData(l.data_entrada)}</td>
+    </tr>`;
+  }).join('');
+  if (animar) cascata(corpo);
+}
+
+let buscaTimer;
+$('#e-busca').addEventListener('input', () => { clearTimeout(buscaTimer); buscaTimer = setTimeout(() => renderEstoque(false), 120); });
+$('#e-situacao').addEventListener('change', () => carregarEstoque().catch(e => toast(e.message, 'erro')));
+$('#btn-atualizar-mapa').addEventListener('click', async (ev) => {
+  const b = ev.currentTarget;
+  b.disabled = true; b.classList.add('carregando');
+  try { await atualizarEstoqueMapa(); } catch (e) { toast(e.message, 'erro'); }
+  b.disabled = false; b.classList.remove('carregando');
+});
+$('#btn-atualizar-estoque').addEventListener('click', async (ev) => {
+  const b = ev.currentTarget;
+  b.disabled = true; b.classList.add('carregando');
+  try { await carregarEstoque(); } catch (e) { toast(e.message, 'erro'); }
+  b.disabled = false; b.classList.remove('carregando');
+});
+
+// ---------- receber ----------
+function anotarRecente(r, doador) {
+  $('#r-recentes-bloco').hidden = false;
+  const ul = $('#r-recentes');
+  const li = document.createElement('li');
+  li.className = 'novo';
+  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  li.innerHTML = `<span class="esq"><span class="forte">${esc(r.produto)}</span>
+    <span class="fraco">${hora}${doador ? ' · ' + esc(doador) : ''}</span></span>
+    <span class="badge ok">+${fmtNum(r.qtd)} ${esc(r.unidade)}</span>`;
+  ul.prepend(li);
+  while (ul.children.length > 6) ul.lastElementChild.remove();
+}
+
+$('#r-origem').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-origem]');
+  if (!b) return;
+  $$('#r-origem [data-origem]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  $('#r-doador').placeholder = b.dataset.origem === 'COMPRA' ? 'Onde comprou (opcional)' : 'Nome de quem doou';
+});
+
+$('#form-receber').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const erroEl = $('#erro-receber');
+  erroEl.classList.remove('visivel');
+  const btn = $('#btn-receber');
+  btn.disabled = true;
+  btn.textContent = 'Registrando…';
+  const doador = $('#r-doador').value.trim();
+  try {
+    const novo = $('#r-produto').value === '__novo__';
+    const r = await chamarAutenticado({
+      action: 'estoque_receber',
+      produto_id: novo ? '' : $('#r-produto').value,
+      produto_novo_nome: novo ? $('#r-novo-nome').value.trim() : '',
+      unidade: novo ? $('#r-unidade').value.trim() : '',
+      categoria: novo ? $('#r-novo-cat').value : '',
+      qtd: $('#r-qtd').value,
+      validade: $('#r-validade').value,
+      local: $('#r-local').value,
+      lote: $('#r-lote').value.trim(),
+      origem: $('#r-origem [aria-pressed="true"]').dataset.origem,
+      doador
+    });
+    if (!r.ok) throw new Error(r.error);
+    celebrar({ titulo: $('#r-origem [aria-pressed="true"]').dataset.origem === 'COMPRA' ? 'Compra registrada!' : 'Doação registrada!', detalhe: r.produto + ' · ' + fmtNum(r.qtd) + ' ' + r.unidade + ' no estoque', tema: 'gratidao' });
+    anotarRecente(r, doador);
+    lembrarDoador(doador);
+    if (r.produto_criado) {
+      toast('Produto novo no catálogo: ' + r.produto, 'ok');
+      await carregarProdutos().catch(() => {});
+    }
+    $('#r-novo-nome').value = '';
+    $('#r-novo').hidden = true;
+    $('#r-unidade').readOnly = true;
+    // Mesmo doador costuma trazer vários itens: mantém doador e local, limpa o resto.
+    $('#r-produto').value = '';
+    $('#r-unidade').value = '';
+    $('#r-qtd').value = '';
+    $('#r-lote').value = '';
+    $('#r-validade').value = '';
+    avisarValidade();
+    marcarChip();
+    await carregarEstoque();
+    if (painel) painel.atualizar().catch(() => {});
+  } catch (err) {
+    erroEl.textContent = err.message;
+    erroEl.classList.add('visivel');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Registrar entrada';
+  }
+});
+
+// ---------- sair ----------
+$('#btn-sair').addEventListener('click', async () => {
+  await sair();
+  location.href = './login.html';
+});
+
+// ---------- troca de senha (guarda) ----------
+$('#form-troca').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const erroEl = $('#erro-troca');
+  erroEl.classList.remove('visivel');
+  if ($('#t-nova').value !== $('#t-repetir').value) {
+    erroEl.textContent = 'As senhas novas não conferem';
+    erroEl.classList.add('visivel');
+    return;
+  }
+  const btn = $('#btn-troca');
+  btn.disabled = true;
+  try {
+    await trocarSenha($('#t-atual').value, $('#t-nova').value);
+    $('#modal-troca').hidden = true;
+    toast('Senha definida com sucesso!');
+  } catch (err) {
+    erroEl.textContent = err.message;
+    erroEl.classList.add('visivel');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------- carga geral ----------
+async function carregarTudo() {
+  await Promise.all([
+    carregarAlertas().catch(e => toast(e.message, 'erro')),
+    carregarProdutos().catch(e => toast(e.message, 'erro')),
+    carregarEstoque().catch(e => toast(e.message, 'erro')),
+    carregarSaldoChips().catch(e => toast(e.message, 'erro'))
+  ]);
+  if (produtos.length) renderChips();
+}
+</script>
+<script>
+  // PWA: instala o app e deixa abrir sem sinal (sw.js). Erro aqui nunca pode atrapalhar a tela.
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>

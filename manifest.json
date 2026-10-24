@@ -1,0 +1,16 @@
+{
+  "name": "SIGA-NCC · Novos Começos Caxias",
+  "short_name": "SIGA-NCC",
+  "description": "Estoque de doações e cestas básicas da Novos Começos Caxias.",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F1E3",
+  "theme_color": "#1F4739",
+  "icons": [
+    { "src": "icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

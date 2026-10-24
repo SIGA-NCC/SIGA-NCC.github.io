@@ -1,0 +1,78 @@
+/* estoque-mapa.css — estantes desenhadas (aba Estoque). Usa os tokens do index (--verde, --papel, --borda…). */
+.mapa-topo { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.mapa-topo .busca { flex: 1 1 260px; width: auto; }
+#mapa-trilha { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .88rem; margin: 4px 0 14px; scroll-margin-top: 120px; }
+#mapa-trilha button { font: 600 .88rem 'Public Sans', sans-serif; color: var(--verde-2); background: none; border: none; padding: 6px 2px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--borda); text-underline-offset: 3px; }
+#mapa-trilha [aria-current] { font-weight: 700; color: var(--verde); }
+#mapa-trilha .sep { color: var(--tinta-fraca); }
+
+.mapa.geral { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 640px) { .mapa.geral { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
+.mapa.oculto { display: none; }
+
+/* a estante: moldura de ferro escuro, tábuas claras, pés */
+.estante { display: flex; flex-direction: column; width: 100%; padding: 0; border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+.estante-nome { font: 700 .95rem 'Fraunces', serif; color: var(--verde); margin-bottom: 6px; }
+.estante-corpo { display: grid; gap: 5px; padding: 6px; background: #3B4A43; border-radius: 6px 6px 2px 2px; box-shadow: 0 10px 22px -14px rgba(0,0,0,.6); transition: transform .2s var(--sai, ease), box-shadow .2s; }
+.estante:hover .estante-corpo, .estante:focus-visible .estante-corpo { transform: translateY(-2px); box-shadow: 0 14px 26px -14px rgba(0,0,0,.65); }
+.estante-pes { display: block; height: 8px; margin: 0 4px; background: linear-gradient(90deg, #3B4A43 0 8px, transparent 8px calc(100% - 8px), #3B4A43 calc(100% - 8px)); }
+.tabua { display: flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 8px; background: #E9DFC6; border-radius: 3px; border-bottom: 3px solid #CDBF9C; font-size: .78rem; }
+.tabua.cheia { background: #F6EEDA; }
+.tabua-nome { font-weight: 700; color: var(--verde); min-width: 2.6em; }
+.tabua-qtd { color: var(--tinta-fraca); font-variant-numeric: lining-nums tabular-nums; }
+.tabua.achado { background: #FCE7B8; border-bottom-color: var(--ambar); box-shadow: 0 0 0 2px var(--ambar) inset; }
+.pino { width: 9px; height: 9px; border-radius: 50%; margin-left: auto; flex: none; }
+.pino + .pino { margin-left: 3px; }
+.pino.riso { background: var(--terracota); }
+.pino.ambar { background: var(--ambar); }
+
+/* estante ampliada */
+.mapa.zoom { max-width: 560px; }
+.estante.grande { cursor: default; }
+.estante.grande .estante-corpo { gap: 8px; padding: 10px; }
+.tabua.grande { flex-direction: column; align-items: stretch; gap: 6px; min-height: 72px; padding: 10px 12px; border: none; border-bottom: 4px solid #CDBF9C; cursor: pointer; text-align: left; font: inherit; color: inherit; transition: background .15s, transform .12s; }
+.tabua.grande:hover { background: #FFF7E4; }
+.tabua.grande:active { transform: scale(.99); }
+.tabua-topo { display: flex; align-items: center; gap: 8px; font-size: .95rem; color: var(--verde); }
+.tabua-topo small { color: var(--tinta-fraca); font-weight: 600; }
+.tabua-topo .seta { margin-left: auto; font-size: 1.3rem; color: var(--verde-2); }
+.tabua-topo .pino { margin-left: 4px; }
+.tabua-itens { display: flex; flex-wrap: wrap; gap: 5px; }
+.tabua-itens em { color: var(--tinta-fraca); font-size: .82rem; }
+.mini-chip { font-size: .76rem; font-weight: 600; background: #FFFDF7; border: 1px solid var(--borda); border-radius: 999px; padding: 2px 9px; color: var(--tinta); }
+
+.sem-local { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; padding: 12px 14px; border: 1px dashed var(--borda); border-radius: 12px; background: #FFFDF7; cursor: pointer; font: inherit; color: var(--tinta); }
+.sem-local span { margin-left: auto; color: var(--verde-2); font-weight: 600; }
+
+/* busca */
+#mapa-resultado { display: grid; gap: 8px; margin-bottom: 12px; }
+#mapa-resultado:empty { display: none; }
+.achado-prod { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .9rem; padding: 10px 12px; background: #FFFDF7; border: 1px solid var(--borda); border-radius: 12px; }
+.achado-prod b { color: var(--verde); margin-right: 2px; }
+.achado-linha { display: flex; gap: 8px; align-items: center; padding: 12px 14px; border: 1px solid var(--borda); border-radius: 12px; background: #FFFDF7; cursor: pointer; font: inherit; color: inherit; }
+.achado-linha span { margin-left: auto; color: var(--verde-2); font-weight: 600; }
+
+/* detalhe do nível */
+#mapa-detalhe h3 { font: 700 1.1rem 'Fraunces', serif; color: var(--verde); margin-bottom: 8px; }
+#mapa-detalhe h3 small { font: 600 .78rem 'Public Sans', sans-serif; color: var(--tinta-fraca); margin-left: 6px; }
+.lotes-local li { flex-wrap: wrap; }
+.lotes-local .esq { gap: 4px; }
+.lotes-local .esq .badge { align-self: flex-start; }
+.acoes-lote { gap: 6px; }
+.btn-mini.perigo { color: #8A3A22; border-color: #EEC3B4; }
+.btn-mini.perigo:hover { border-color: var(--terracota); }
+@media (max-width: 560px) { .lotes-local .esq { flex: 1 1 100%; } .acoes-lote { width: 100%; justify-content: flex-start; } }
+
+/* formulários dos diálogos */
+.dlg-form { display: grid; gap: 14px; }
+.dlg-form .rotulo-lista { margin: 0; }
+.chip-radio { position: relative; cursor: pointer; display: inline-block; margin: 0; text-transform: none; letter-spacing: 0; font: inherit; }
+.chip-radio input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.chip-radio span { display: inline-block; font: 600 .86rem 'Public Sans', sans-serif; padding: 9px 14px; min-height: 40px; border-radius: 999px; border: 1.5px solid var(--borda); background: #FFFDF7; color: var(--verde); transition: background .15s, border-color .15s, color .15s; }
+.chip-radio input:checked + span { background: var(--verde); border-color: var(--verde); color: var(--papel); }
+.chip-radio input:focus-visible + span { outline: 2px solid var(--verde-2); outline-offset: 2px; }
+.chip-radio input:disabled + span { opacity: .4; cursor: not-allowed; text-decoration: line-through; }
+.chip-radio.mini span { padding: 6px 0; min-width: 44px; min-height: 34px; text-align: center; font-size: .8rem; border-radius: 8px; }
+.grade-destino { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px 14px; }
+.grade-est { display: flex; align-items: center; gap: 5px; }
+.grade-est > span { font: 700 .8rem 'Public Sans', sans-serif; color: var(--verde); min-width: 2.2em; }
