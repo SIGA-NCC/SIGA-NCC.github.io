@@ -217,8 +217,6 @@
     color: #8A3A22;
     font-size: .9rem;
   }
-  .dica-demo { margin-top: 14px; font-size: .82rem; color: var(--verde); background: rgba(232,163,61,.18); border-radius: 8px; padding: 8px 12px; }
-  .dica-demo[hidden] { display: none; }
   .erro.visivel { display: block; animation: card .3s ease both; }
   .rodape-card {
     margin-top: 20px;
@@ -525,7 +523,6 @@
         </div>
         <p class="aviso-caps" id="aviso-caps" hidden>Caps Lock está ligado</p>
       </div>
-      <p class="dica-demo" id="dica-demo" hidden>Modo demonstração: <b>rogerio</b> (admin) ou <b>juraci</b> (voluntário), senha <b>demo</b>.</p>
       <div class="erro" id="erro-login" role="alert"></div>
       <button class="btn" id="btn-entrar" type="submit">Entrar</button>
     </form>
@@ -671,7 +668,6 @@ import { girarVersiculo } from './fx.js';
 import { esc } from './ui.js';
 
 const $ = (sel) => document.querySelector(sel);
-if (modoDemo()) $('#dica-demo').hidden = false;
 
 const reduzMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
